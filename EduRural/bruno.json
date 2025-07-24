@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "EduRural",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

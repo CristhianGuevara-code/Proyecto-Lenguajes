@@ -1,0 +1,18 @@
+meta {
+  name: Edit
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{PATH}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "ADMIN",
+    "description": "ADMINISTRADOR"
+  }
+}

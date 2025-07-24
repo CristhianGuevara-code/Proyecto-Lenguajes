@@ -1,0 +1,20 @@
+meta {
+  name: Create
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{PATH}}/guides
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "title": "Tarea",
+    "description": "Sumar numeros",
+    "gradeId": "4d22e985-677c-4cdc-b1d1-6ffc9c73d164",
+    "filePath": "file"
+  }
+}

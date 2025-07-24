@@ -1,0 +1,17 @@
+meta {
+  name: Create
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{PATH}}/grades
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+     "name": "Primwer Grado"
+  }
+}
