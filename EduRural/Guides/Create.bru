@@ -7,14 +7,19 @@ meta {
 post {
   url: {{PATH}}/guides
   body: json
-  auth: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{TOKEN}}
 }
 
 body:json {
   {
-    "title": "Tarea",
-    "description": "Sumar numeros",
-    "gradeId": "4d22e985-677c-4cdc-b1d1-6ffc9c73d164",
-    "filePath": "file"
+    "title": "Tarea1",
+    "description": "Sumar números",
+    "gradeId": "0560f051-9751-4de9-9674-7929d20582de",
+    "subjectId": "58e56e1e-581c-4bac-97e8-18117aba5af5",
+    "filePath": "File"
   }
 }

@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using EduRural.API.Database;
 using EduRural.API.Database.Entities;
+using EduRural.API.Dtos.Common;
+using EduRural.API.Dtos.Grades;
 using EduRural.API.Dtos.Guides;
 using EduRural.API.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -14,28 +16,82 @@ namespace EduRural.API.Services
     {
         private readonly EduRuralDbContext _context;
         private readonly IMapper _mapper;
+        private readonly IAuditService _auditService;
+        private readonly int PAGE_ZISE;         //readonly es para que esa variable no cambie cuando se inicialice
+        private readonly int PAGE_SIZE_LIMIT;  //readonly es para que esa variable no cambie cuando se inicialice
 
-        public GuidesService(EduRuralDbContext context, IMapper mapper)
+        public GuidesService(EduRuralDbContext context, IMapper mapper, 
+            IConfiguration configuration, IAuditService auditService)
         {
             _context = context;
             _mapper = mapper;
+            _auditService = auditService;
+            PAGE_ZISE = configuration.GetValue<int>("PageSize");
+            PAGE_SIZE_LIMIT = configuration.GetValue<int>("PageSizeLimit");
         }
 
-        public async Task<ResponseDto<List<GuideDto>>> GetListAsync()
+        public async Task<ResponseDto<PaginationDto<List<GuideDto>>>> GetListAsync(
+              string searchTerm = "", int page = 1, int pageSize = 0)
         {
-            var guides = await _context.Guides
+            pageSize = pageSize == 0 ? PAGE_ZISE : pageSize;
+            int startIndex = (page - 1) * pageSize; // nos sirve para definir el indice inicial de la paginacion
+
+            IQueryable<GuideEntity> guideQuery = _context.Guides;
+
+            if (!string.IsNullOrEmpty(searchTerm)) //si el termino de busqueda es diferente a vacio o nulo
+            {
+                guideQuery = guideQuery.Where
+                    (x => (x.Title).Contains(searchTerm));
+            }
+
+            int totalRows = await guideQuery.CountAsync();
+
+            var guidesEntity = await guideQuery
                 .Include(g => g.Grade)
                 .Include(g => g.UploadedBy)
+                .OrderBy(x => x.Title)
+                .Skip(startIndex)
+                .Take(pageSize)
                 .ToListAsync();
 
-            return new ResponseDto<List<GuideDto>>
+
+            var guidesDto = _mapper.Map<List<GuideDto>>(guidesEntity);
+
+            return new ResponseDto<PaginationDto<List<GuideDto>>>
             {
                 StatusCode = HttpStatusCode.OK,
                 Status = true,
-                Message = "Registros obtenidos correctamente",
-                Data = _mapper.Map<List<GuideDto>>(guides)
+                Message = guidesEntity.Count() > 0 ? "Registros encontrados" : "No se encontraron registros",
+                Data = new PaginationDto<List<GuideDto>>
+                {
+                    CurrentPage = page,
+                    PageSize = pageSize,
+                    TotalItems = totalRows,
+                    TotalPages = (int)Math.Ceiling((double)totalRows / pageSize),
+                    Items = guidesDto,
+                    HasPreviousPage = page > 1,
+                    HasNextPage = startIndex + pageSize < PAGE_SIZE_LIMIT && page < (int)Math
+                    .Ceiling((double)(totalRows / pageSize)),
+
+                }
             };
         }
+
+        //public async Task<ResponseDto<List<GuideDto>>> GetListAsync()
+        //{
+        //    var guides = await _context.Guides
+        //        .Include(g => g.Grade)
+        //        .Include(g => g.UploadedBy)
+        //        .ToListAsync();
+
+        //    return new ResponseDto<List<GuideDto>>
+        //    {
+        //        StatusCode = HttpStatusCode.OK,
+        //        Status = true,
+        //        Message = "Registros obtenidos correctamente",
+        //        Data = _mapper.Map<List<GuideDto>>(guides)
+        //    };
+        //}
 
         public async Task<ResponseDto<GuideDto>> GetOneByIdAsync(string id)
         {
@@ -63,11 +119,11 @@ namespace EduRural.API.Services
             };
         }
 
-        public async Task<ResponseDto<GuideDto>> CreateAsync(GuideCreateDto dto, string userId)
+        public async Task<ResponseDto<GuideDto>> CreateAsync(GuideCreateDto dto)
         {
-
-            var exists = await _context.Grades.AnyAsync(g => g.Id == dto.GradeId);
-            if (!exists)
+            // verificar si el grado existe
+            var existsGrade = await _context.Grades.AnyAsync(g => g.Id == dto.GradeId);
+            if (!existsGrade)
             {
                 return new ResponseDto<GuideDto>
                 {
@@ -76,10 +132,25 @@ namespace EduRural.API.Services
                     Message = "El grado no existe"
                 };
             }
+            // verificar si la materia existe
+            var existSubject = await _context.Subjects.AnyAsync(s => s.Id == dto.SubjectId);
+
+            if (!existSubject)
+            {
+                return new ResponseDto<GuideDto>
+                {
+                    StatusCode = HttpStatusCode.NOT_FOUND,
+                    Status = false,
+                    Message = "La materia no existe"
+                };
+            }
+
+            var userId = _auditService.GetUserId();
 
             var guide = _mapper.Map<GuideEntity>(dto);
             guide.Id = Guid.NewGuid().ToString();
             guide.GradeId = dto.GradeId;
+            guide.SubjectId = dto.SubjectId;
             guide.UploadedById = userId;
             guide.UploadDate = DateTime.UtcNow;
 

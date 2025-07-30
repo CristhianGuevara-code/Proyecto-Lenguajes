@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace EduRural.API.Migrations
 {
     /// <inheritdoc />
-    public partial class AddTables : Migration
+    public partial class NewRelations : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,12 +15,32 @@ namespace EduRural.API.Migrations
                 name: "edu_grades",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true)
+                    id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    created_by = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    created_date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    updated_by = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    updated_date = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_edu_grades", x => x.Id);
+                    table.PrimaryKey("PK_edu_grades", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "edu_subjects",
+                columns: table => new
+                {
+                    id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    created_by = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    created_date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    updated_by = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    updated_date = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_edu_subjects", x => x.id);
                 });
 
             migrationBuilder.CreateTable(
@@ -91,22 +111,32 @@ namespace EduRural.API.Migrations
                 name: "edu_guides",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     title = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     file_path = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     upload_date = table.Column<DateTime>(type: "datetime2", nullable: false),
                     grade_id = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    uploaded_by_id = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                    uploaded_by_id = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    subject_id = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    created_by = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    created_date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    updated_by = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    updated_date = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_edu_guides", x => x.Id);
+                    table.PrimaryKey("PK_edu_guides", x => x.id);
                     table.ForeignKey(
                         name: "FK_edu_guides_edu_grades_grade_id",
                         column: x => x.grade_id,
                         principalTable: "edu_grades",
-                        principalColumn: "Id");
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "FK_edu_guides_edu_subjects_subject_id",
+                        column: x => x.subject_id,
+                        principalTable: "edu_subjects",
+                        principalColumn: "id");
                     table.ForeignKey(
                         name: "FK_edu_guides_sec_users_uploaded_by_id",
                         column: x => x.uploaded_by_id,
@@ -205,6 +235,11 @@ namespace EduRural.API.Migrations
                 column: "grade_id");
 
             migrationBuilder.CreateIndex(
+                name: "IX_edu_guides_subject_id",
+                table: "edu_guides",
+                column: "subject_id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_edu_guides_uploaded_by_id",
                 table: "edu_guides",
                 column: "uploaded_by_id");
@@ -272,6 +307,9 @@ namespace EduRural.API.Migrations
 
             migrationBuilder.DropTable(
                 name: "edu_grades");
+
+            migrationBuilder.DropTable(
+                name: "edu_subjects");
 
             migrationBuilder.DropTable(
                 name: "sec_roles");

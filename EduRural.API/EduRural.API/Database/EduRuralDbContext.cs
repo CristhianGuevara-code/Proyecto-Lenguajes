@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using EduRural.API.Database.Entities;
+using EduRural.API.Database.Entities.Common;
+using EduRural.API.Services.Interfaces;
 
 namespace EduRural.API.Database
 {
@@ -11,10 +13,17 @@ namespace EduRural.API.Database
         string
     >
     {
-        public EduRuralDbContext(DbContextOptions options) : base(options) { }
+        private readonly IAuditService _auditService;
+
+        public EduRuralDbContext(DbContextOptions options,
+            IAuditService auditService) : base(options)
+        {
+            _auditService = auditService;
+        }
 
         public DbSet<GuideEntity> Guides { get; set; }
         public DbSet<GradeEntity> Grades { get; set; }
+        public DbSet<SubjectEntity> Subjects { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -30,6 +39,38 @@ namespace EduRural.API.Database
                 .HasOne(g => g.UploadedBy)
                 .WithMany(u => u.Guides)
                 .HasForeignKey(g => g.UploadedById);
+        }
+
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            var entries = ChangeTracker
+                .Entries()
+                .Where(e => e.Entity is BaseEntity && (
+                    e.State == EntityState.Added ||
+                    e.State == EntityState.Modified
+                ));
+
+            foreach (var entityEntry in entries)
+            {
+                var entity = entityEntry.Entity as BaseEntity;
+                if (entity != null)
+                {
+                    if (entityEntry.State == EntityState.Added)
+                    {
+                        entity.CreateDate = DateTime.Now;
+                        entity.CreatedBy = _auditService.GetUserId();
+                        entity.UpdatedDate = DateTime.Now;
+                        entity.UpdatedBy = _auditService.GetUserId();
+                    }
+                    else
+                    {
+                        entity.UpdatedDate = DateTime.Now;
+                        entity.UpdatedBy = _auditService.GetUserId();
+                    }
+                }
+            }
+
+            return base.SaveChangesAsync(cancellationToken);
         }
 
         private static void SetIdentityTablesNames(ModelBuilder builder)

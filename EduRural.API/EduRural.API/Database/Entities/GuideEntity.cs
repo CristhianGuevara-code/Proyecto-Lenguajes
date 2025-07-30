@@ -1,13 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using EduRural.API.Database.Entities.Common;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EduRural.API.Database.Entities
 {
     [Table("edu_guides")]
-    public class GuideEntity
+    public class GuideEntity : BaseEntity
     {
-        [Key]
-        public string Id { get; set; }
+        //[Key]
+        //public string Id { get; set; }
 
         [Column("title")]
         [StringLength(100)]

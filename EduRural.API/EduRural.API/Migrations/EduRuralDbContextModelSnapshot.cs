@@ -25,12 +25,29 @@ namespace EduRural.API.Migrations
             modelBuilder.Entity("EduRural.API.Database.Entities.GradeEntity", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(450)")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreateDate")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_date");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("created_by");
 
                     b.Property<string>("Name")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)")
                         .HasColumnName("name");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("updated_by");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_date");
 
                     b.HasKey("Id");
 
@@ -40,7 +57,16 @@ namespace EduRural.API.Migrations
             modelBuilder.Entity("EduRural.API.Database.Entities.GuideEntity", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(450)")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreateDate")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_date");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("created_by");
 
                     b.Property<string>("Description")
                         .HasMaxLength(500)
@@ -55,10 +81,22 @@ namespace EduRural.API.Migrations
                         .HasColumnType("nvarchar(450)")
                         .HasColumnName("grade_id");
 
+                    b.Property<string>("SubjectId")
+                        .HasColumnType("nvarchar(450)")
+                        .HasColumnName("subject_id");
+
                     b.Property<string>("Title")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)")
                         .HasColumnName("title");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("updated_by");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_date");
 
                     b.Property<DateTime>("UploadDate")
                         .HasColumnType("datetime2")
@@ -71,6 +109,8 @@ namespace EduRural.API.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("GradeId");
+
+                    b.HasIndex("SubjectId");
 
                     b.HasIndex("UploadedById");
 
@@ -107,6 +147,38 @@ namespace EduRural.API.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("sec_roles", (string)null);
+                });
+
+            modelBuilder.Entity("EduRural.API.Database.Entities.SubjectEntity", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreateDate")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_date");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("updated_by");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_date");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("edu_subjects");
                 });
 
             modelBuilder.Entity("EduRural.API.Database.Entities.UserEntity", b =>
@@ -300,11 +372,17 @@ namespace EduRural.API.Migrations
                         .WithMany("Guides")
                         .HasForeignKey("GradeId");
 
+                    b.HasOne("EduRural.API.Database.Entities.SubjectEntity", "Subject")
+                        .WithMany("Guides")
+                        .HasForeignKey("SubjectId");
+
                     b.HasOne("EduRural.API.Database.Entities.UserEntity", "UploadedBy")
                         .WithMany("Guides")
                         .HasForeignKey("UploadedById");
 
                     b.Navigation("Grade");
+
+                    b.Navigation("Subject");
 
                     b.Navigation("UploadedBy");
                 });
@@ -361,6 +439,11 @@ namespace EduRural.API.Migrations
                 });
 
             modelBuilder.Entity("EduRural.API.Database.Entities.GradeEntity", b =>
+                {
+                    b.Navigation("Guides");
+                });
+
+            modelBuilder.Entity("EduRural.API.Database.Entities.SubjectEntity", b =>
                 {
                     b.Navigation("Guides");
                 });

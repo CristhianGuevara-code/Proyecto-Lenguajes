@@ -1,13 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using EduRural.API.Database.Entities.Common;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EduRural.API.Database.Entities
 {
     [Table("edu_grades")]
-    public class GradeEntity
+    public class GradeEntity : BaseEntity
     {
-        [Key]
-        public string Id { get; set; }
+        //[Key]
+        //public string Id { get; set; }
 
         [Column("name")]
         [StringLength(50)]

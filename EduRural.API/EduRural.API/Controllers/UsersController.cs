@@ -1,5 +1,7 @@
-﻿using EduRural.API.Dtos.Users;
+﻿using EduRural.API.Constants;
+using EduRural.API.Dtos.Users;
 using EduRural.API.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Persons.API.Dtos.Common;
@@ -8,6 +10,8 @@ namespace EduRural.API.Controllers
 {
     [Route("api/users")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = "Bearer")]
+
     public class UsersController : ControllerBase
     {
         private readonly IUsersService _usersService;
@@ -30,6 +34,7 @@ namespace EduRural.API.Controllers
         //}
 
         [HttpGet("{id}")]
+        [Authorize(Roles = $"{RolesConstant.PROFESOR}, {RolesConstant.PADRE}")]
         public async Task<ActionResult<ResponseDto<UserDto>>> GetOneById(string id)
         {
             var response = await _usersService.GetOneByIdAsync(id);
@@ -43,6 +48,7 @@ namespace EduRural.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = $"{RolesConstant.PROFESOR}, {RolesConstant.PADRE}")]
         public async Task<ActionResult<ResponseDto<UserActionResponseDto>>> Create([FromBody] UserCreateDto dto)
         {
             var response = await _usersService.CreateAsync(dto);
@@ -56,6 +62,7 @@ namespace EduRural.API.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = $"{RolesConstant.PROFESOR}, {RolesConstant.PADRE}")]
         public async Task<ActionResult<ResponseDto<UserActionResponseDto>>> Edit([FromBody] UserEditDto dto, string id)
         {
             var response = await _usersService.EditAsync(dto, id);
@@ -69,6 +76,7 @@ namespace EduRural.API.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = $"{RolesConstant.PROFESOR}, {RolesConstant.PADRE}")]
         public async Task<ActionResult<ResponseDto<UserActionResponseDto>>> Delete(string id)
         {
             var response = await _usersService.DeleteAsync(id);

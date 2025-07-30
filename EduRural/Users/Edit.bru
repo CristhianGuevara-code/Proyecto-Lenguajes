@@ -1,22 +1,22 @@
 meta {
-  name: Create
+  name: Edit
   type: http
-  seq: 1
+  seq: 4
 }
 
-post {
-  url: {{PATH}}/users
+put {
+  url: {{PATH}}/users/2154f4d3-8052-40d6-ab40-b17694622ba4
   body: json
   auth: none
 }
 
 body:json {
   {
-    "fullName":"Pedro Hernández",
-    "email": "pedroH@gmail.com",
+    "fullName": "Juan Perez",
+    "email": "perejuanito@gmail.com",
     "birthDate": "2002-05-29",
     "roles": [
-      "PADRE"
+      "PROFESOR"
     ],
     "password": "ConTra1!",
     "confirmPassword": "ConTra1!"
