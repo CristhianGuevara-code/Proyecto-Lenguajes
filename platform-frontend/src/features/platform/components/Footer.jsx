@@ -9,7 +9,7 @@ export const Footer = () => {
           Mi Escuelita
         </a>
         <p className="mt-2 text-sm text-platform-darkblue md:mt-0">
-          Por Cristhian Guevara y Elkin Bohorquez - Todos los derechos reservados - 2025
+          © Por Cristhian Guevara y Elkin Bohorquez - Todos los derechos reservados - 2025
         </p>
       </div>
     </footer>
