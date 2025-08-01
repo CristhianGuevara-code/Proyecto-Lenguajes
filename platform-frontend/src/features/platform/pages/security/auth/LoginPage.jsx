@@ -31,7 +31,7 @@ function LoginPage() {
             maxWidth: '500px',
             width: '100%',
             background: 'hsla(0, 0%, 100%, 0.80)',
-            backdropFilter: 'blur(10px)',
+            backdropFilter: 'blur(1px)',
           }}
         >
           <MDBCardBody className="p-4 text-center">

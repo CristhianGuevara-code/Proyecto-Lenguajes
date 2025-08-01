@@ -1,19 +1,42 @@
 import { useState } from "react";
 
-export const PostForm = ({ onSubmit }: { onSubmit: (data: any) => void }) => {
+export const PostForm = ({ onSubmit }) => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [type, setType] = useState<"consulta" | "aviso">("consulta");
+  const [imageFile, setImageFile] = useState(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleImageChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setImageFile(e.target.files[0]);
+    } else {
+      setImageFile(null);
+    }
+  };
+
+  const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit({ title, content, type, author: "Estudiante X" });
+    if (!title.trim() || !content.trim()) return;
+
+    let imageUrl: string | null = null;
+    if (imageFile) {
+      imageUrl = URL.createObjectURL(imageFile);
+    }
+
+    onSubmit({
+      title,
+      content,
+      author: "Docente",
+      imageUrl,
+    });
+
     setTitle("");
     setContent("");
+    setImageFile(null);
+    e.target.reset(); // limpia input file
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-4 rounded shadow mb-6">
+    <form onSubmit={handleSubmit} className="bg-white p-4 rounded shadow mb-6 w-full">
       <input
         className="border p-2 w-full mb-2 rounded"
         placeholder="Título del post"
@@ -26,14 +49,12 @@ export const PostForm = ({ onSubmit }: { onSubmit: (data: any) => void }) => {
         value={content}
         onChange={(e) => setContent(e.target.value)}
       />
-      <select
-        value={type}
-        onChange={(e) => setType(e.target.value as any)}
-        className="border p-2 rounded mb-2 w-full"
-      >
-        <option value="consulta">Consulta</option>
-        <option value="aviso">Aviso</option>
-      </select>
+      <input
+        type="file"
+        accept="image/*"
+        onChange={handleImageChange}
+        className="mb-2"
+      />
       <button
         type="submit"
         className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
