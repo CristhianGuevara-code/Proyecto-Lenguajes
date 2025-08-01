@@ -1,0 +1,26 @@
+meta {
+  name: Create
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{PATH}}/parents
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{TOKEN}}
+}
+
+body:json {
+  {
+    "userId": "2154f4d3-8052-40d6-ab40-b17694622ba4",
+    "phoneNumber": "9645-2312",
+    "address": "Santa Rosa Copan",
+    "studentIds": [
+      "95a1c04a-53de-4ac8-bdc4-567335964199"
+    ]
+  }
+}

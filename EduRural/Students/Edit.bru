@@ -1,0 +1,26 @@
+meta {
+  name: Edit
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{PATH}}/students/
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{TOKEN}}
+}
+
+body:json {
+  {
+    "fullName": "Juansito Perez",
+    "birthDate": "2025-12-9",
+    "gradeId": "0560f051-9751-4de9-9674-7929d20582de",
+    "subjectIds": [
+      ""
+    ]
+  }
+}

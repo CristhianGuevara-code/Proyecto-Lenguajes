@@ -2,8 +2,11 @@
 using EduRural.API.Database.Entities;
 using EduRural.API.Dtos.Grades;
 using EduRural.API.Dtos.Guides;
+using EduRural.API.Dtos.Parents;
 using EduRural.API.Dtos.Roles;
+using EduRural.API.Dtos.Students;
 using EduRural.API.Dtos.Subjects;
+using EduRural.API.Dtos.Teachers;
 using EduRural.API.Dtos.Users;
 
 
@@ -48,6 +51,24 @@ namespace EduRural.API.Helpers
             CreateMap<UserCreateDto, UserEntity>()
                 .ForMember(dest => dest.UserName, org => org.MapFrom(src => src.Email));
             CreateMap<UserEditDto, UserEntity>();
+
+            // Parent 
+            CreateMap<ParentEntity, ParentDto>();
+            CreateMap<ParentEntity, ParentActionResponseDto>();
+            CreateMap<ParentCreateDto, ParentEntity>();
+            CreateMap<ParentEditDto, ParentEntity>();
+
+            // Student 
+            CreateMap<StudentEntity, StudentDto>();
+            CreateMap<StudentEntity, StudentActionResponseDto>();
+            CreateMap<StudentCreateDto, StudentEntity>();
+            CreateMap<StudentEditDto, StudentEntity>();
+
+            // Teacher 
+            CreateMap<TeacherEntity, TeacherDto>();
+            CreateMap<TeacherEntity, TeacherActionResponseDto>();
+            CreateMap<TeacherCreateDto, TeacherEntity>();
+            CreateMap<TeacherEditDto, TeacherEntity>();
         }
     }
 }
