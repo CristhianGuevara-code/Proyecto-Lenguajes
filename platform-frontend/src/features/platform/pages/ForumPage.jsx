@@ -4,12 +4,10 @@ import { ForumPostCard } from "../components/forum/ForumPostCard";
 
 export const ForumPage = () => {
   const [posts, setPosts] = useState(() => {
-    // Inicializa con los posts guardados, o un array vacío si no hay nada
     const savedPosts = localStorage.getItem("forum_posts");
     return savedPosts ? JSON.parse(savedPosts) : [];
   });
 
-  // Guarda los posts en localStorage cada vez que cambien
   useEffect(() => {
     localStorage.setItem("forum_posts", JSON.stringify(posts));
   }, [posts]);
@@ -23,12 +21,14 @@ export const ForumPage = () => {
     setPosts((prev) => [newPost, ...prev]);
   };
 
-  const addCommentToPost = (postId, comment) => {
-    setPosts((prevPosts) =>
-      prevPosts.map((post) =>
-        post.id === postId ? { ...post, comments: [...post.comments, comment] } : post
-      )
+  const editPost = (postId, updatedPost) => {
+    setPosts((prev) =>
+      prev.map((post) => (post.id === postId ? updatedPost : post))
     );
+  };
+
+  const deletePost = (postId) => {
+    setPosts((prev) => prev.filter((post) => post.id !== postId));
   };
 
   return (
@@ -36,7 +36,13 @@ export const ForumPage = () => {
       <h1 className="text-3xl font-bold text-blue-700 mb-6">Foro Escolar</h1>
       <PostForm onSubmit={addPost} />
       {posts.map((post) => (
-        <ForumPostCard key={post.id} post={post} onAddComment={addCommentToPost} />
+        <ForumPostCard
+          key={post.id}
+          post={post}
+          onAddComment={() => {}} // no usado, manejo en ForumPostCard
+          onDeletePost={deletePost}
+          onEditPost={editPost}
+        />
       ))}
     </div>
   );

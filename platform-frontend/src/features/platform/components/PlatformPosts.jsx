@@ -1,3 +1,5 @@
+import { FaFileDownload } from "react-icons/fa";
+
 export const PlatformPosts = () => {
   return (
     <div className="w-full lg:w-8/12">
@@ -25,18 +27,19 @@ export const PlatformPosts = () => {
           <div className="mt-2">
             <a href="#">Mi Diario de Aventuras</a>
             <p className="mt--2 text-gray-600">
-             Escribe un pequeño diario contando qué hiciste hoy o esta semana. Usa al menos 5 oraciones y 
-             dibuja una imagen sobre tu día favorito. Puedes usar lápices de colores o crayones. ¡No olvides 
-             escribir la fecha!
+              Escribe un pequeño diario contando qué hiciste hoy o esta semana. Usa al menos 5 oraciones y
+              dibuja una imagen sobre tu día favorito. Puedes usar lápices de colores o crayones. ¡No olvides
+              escribir la fecha!
             </p>
           </div>
           <div className="flex items-center justify-between mt-4">
             <a
-                href="#"
-                className="px-2 py-1 font-bold text-platform-darkblue bg-platform-softyellow rounded hover:bg-platform-mintgreen"
-              >
-                Descargar ejemplo
-              </a>
+              href="#"
+              className="px-2 py-1 flex items-center gap-2 font-bold text-platform-darkblue bg-platform-softyellow rounded hover:bg-platform-mintgreen"
+            >
+              <FaFileDownload className="text-lg" />
+              Descargar
+            </a>
             <div>
               <a href="#" className="flex items-center">
                 <img
@@ -65,18 +68,19 @@ export const PlatformPosts = () => {
           <div className="mt-2">
             <a href="#">Busca y Encuentra Palabras</a>
             <p className="mt--2 text-gray-600">
-              Te dejaremos una sopa de letras con palabras relacionadas a los animales 
-              (gato, perro, jirafa, pez, etc.). Encuentra todas las palabras escondidas y 
+              Te dejaremos una sopa de letras con palabras relacionadas a los animales
+              (gato, perro, jirafa, pez, etc.). Encuentra todas las palabras escondidas y
               márcalas con un color. Luego, escribe 2 oraciones usando algunas de esas palabras.
             </p>
           </div>
           <div className="flex items-center justify-between mt-4">
-            <a
-                href="#"
-                className="px-2 py-1 font-bold text-platform-darkblue bg-platform-softyellow rounded hover:bg-platform-mintgreen"
-              >
-                Descargar ejemplo
-              </a>
+           <a
+              href="#"
+              className="px-2 py-1 flex items-center gap-2 font-bold text-platform-darkblue bg-platform-softyellow rounded hover:bg-platform-mintgreen"
+            >
+              <FaFileDownload className="text-lg" />
+              Descargar
+            </a>
             <div>
               <a href="#" className="flex items-center">
                 <img
@@ -105,18 +109,19 @@ export const PlatformPosts = () => {
           <div className="mt-2">
             <a href="#">Diseña tu Escuela Ideal</a>
             <p className="mt--2 text-gray-600">
-              Imagina cómo sería tu escuela perfecta. Dibuja cómo se vería y escribe 3 cosas que tendría 
-              (por ejemplo: un parque grande, pizarras mágicas, una sala de juegos). Puedes hacerlo en 
+              Imagina cómo sería tu escuela perfecta. Dibuja cómo se vería y escribe 3 cosas que tendría
+              (por ejemplo: un parque grande, pizarras mágicas, una sala de juegos). Puedes hacerlo en
               una hoja aparte.
             </p>
           </div>
           <div className="flex items-center justify-between mt-4">
             <a
-                href="#"
-                className="px-2 py-1 font-bold text-platform-darkblue bg-platform-softyellow rounded hover:bg-platform-mintgreen"
-              >
-                Descargar ejemplo
-              </a>
+              href="#"
+              className="px-2 py-1 flex items-center gap-2 font-bold text-platform-darkblue bg-platform-softyellow rounded hover:bg-platform-mintgreen"
+            >
+              <FaFileDownload className="text-lg" />
+              Descargar
+            </a>
             <div>
               <a href="#" className="flex items-center">
                 <img
@@ -145,18 +150,19 @@ export const PlatformPosts = () => {
           <div className="mt-2">
             <a href="#">Problemas Matemáticos del Hogar</a>
             <p className="mt--2 text-gray-600">
-              En el PDF encontrarás 4 problemas matemáticos con objetos de casa. Por ejemplo: 
-              "Si tengo 3 manzanas y compro 2 más, ¿cuántas tengo en total?" Resuélvelos paso a 
+              En el PDF encontrarás 4 problemas matemáticos con objetos de casa. Por ejemplo:
+              "Si tengo 3 manzanas y compro 2 más, ¿cuántas tengo en total?" Resuélvelos paso a
               paso y escribe las respuestas. Usa dibujos si lo necesitas.
             </p>
           </div>
           <div className="flex items-center justify-between mt-4">
             <a
-                href="#"
-                className="px-2 py-1 font-bold text-platform-darkblue bg-platform-softyellow rounded hover:bg-platform-mintgreen"
-              >
-                Descargar ejemplo
-              </a>
+              href="#"
+              className="px-2 py-1 flex items-center gap-2 font-bold text-platform-darkblue bg-platform-softyellow rounded hover:bg-platform-mintgreen"
+            >
+              <FaFileDownload className="text-lg" />
+              Descargar
+            </a>
             <div>
               <a href="#" className="flex items-center">
                 <img
