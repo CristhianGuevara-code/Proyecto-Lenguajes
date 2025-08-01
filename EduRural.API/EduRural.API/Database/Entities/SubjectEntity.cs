@@ -15,5 +15,8 @@ namespace EduRural.API.Database.Entities
         public string Name { get; set; }
 
         public ICollection<GuideEntity> Guides { get; set; }
+
+        public ICollection<StudentSubjectEntity> StudentSubjects { get; set; }
+
     }
 }

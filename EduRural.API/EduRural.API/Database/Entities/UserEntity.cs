@@ -19,5 +19,9 @@ namespace EduRural.API.Database.Entities
         public DateTime BirthDate { get; set; }
 
         public ICollection<GuideEntity> Guides { get; set; }
+
+        public TeacherEntity Teacher { get; set; }
+        public ParentEntity Parent { get; set; }
+
     }
 }

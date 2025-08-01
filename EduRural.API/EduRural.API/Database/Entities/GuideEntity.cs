@@ -36,5 +36,10 @@ namespace EduRural.API.Database.Entities
         public string SubjectId { get; set; }
         public SubjectEntity Subject { get; set; }
 
+        [Column("teacher_id")]
+        public string TeacherId { get; set; }
+        public TeacherEntity Teacher { get; set; }
+
+
     }
 }

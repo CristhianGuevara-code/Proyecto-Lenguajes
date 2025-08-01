@@ -90,7 +90,7 @@ namespace EduRural.API.Services
             {
                 StatusCode = HttpStatusCode.OK,
                 Status = true,
-                Message = "Materia encontrada",
+                Message = "Grado encontrado",
                 Data = _mapper.Map<GradeDto>(grade)
             };
         }
