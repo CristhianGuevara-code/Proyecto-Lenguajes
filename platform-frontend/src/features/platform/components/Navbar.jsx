@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { FaHome, FaBook, FaGamepad, FaComments } from "react-icons/fa";
+import { MdWorkspacePremium } from "react-icons/md";
 
 export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -25,11 +26,19 @@ export const Navbar = () => {
         </div>
         <div className={` ${isMenuOpen ? "flex " : "hidden"} flex-col md:flex md:flex-row md:mx-4`}>
           <Link
-            to="/home"
+            to="/grades"
             className="my-1 flex items-center gap-2 text-platform-darkblue hover:text-platform-strawberrypink md:mx-4 md:my-0"
           >
             <FaHome className="text-lg" />
             Inicio
+          </Link>
+          
+          <Link
+            to="/home"
+            className="my-1 flex items-center gap-2 text-platform-darkblue hover:text-platform-strawberrypink md:mx-4 md:my-0"
+          >
+            <MdWorkspacePremium className="text-lg" />
+            Asignaturas
           </Link>
 
           <Link
