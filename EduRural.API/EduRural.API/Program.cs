@@ -43,6 +43,9 @@ builder.Services.AddTransient<IUsersService, UsersService>();
 builder.Services.AddTransient<ISubjectService, SubjectService>();
 builder.Services.AddTransient<IAuthService, AuthService>();
 builder.Services.AddScoped<IAuditService, AuditService>();
+builder.Services.AddScoped<ITeacherService, TeacherService>();
+builder.Services.AddScoped<IStudentService, StudentService>();
+builder.Services.AddScoped<IParentService, ParentService>();
 
 builder.Services.AddCorsConfiguration(builder.Configuration);
 

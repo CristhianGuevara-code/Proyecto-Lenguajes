@@ -15,5 +15,10 @@ namespace EduRural.API.Database.Entities
         public string Name { get; set; }
 
         public ICollection<GuideEntity> Guides { get; set; }
+
+        [Column("teacher_id")]
+        public string TeacherId { get; set; }
+        public TeacherEntity Teacher { get; set; }
+
     }
 }

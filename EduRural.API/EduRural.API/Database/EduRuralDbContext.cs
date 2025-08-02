@@ -24,6 +24,9 @@ namespace EduRural.API.Database
         public DbSet<GuideEntity> Guides { get; set; }
         public DbSet<GradeEntity> Grades { get; set; }
         public DbSet<SubjectEntity> Subjects { get; set; }
+        public DbSet<StudentEntity> Students { get; set; }
+        public DbSet<ParentEntity> Parents { get; set; }
+        public DbSet<TeacherEntity> Teachers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -39,6 +42,17 @@ namespace EduRural.API.Database
                 .HasOne(g => g.UploadedBy)
                 .WithMany(u => u.Guides)
                 .HasForeignKey(g => g.UploadedById);
+
+            builder.Entity<GradeEntity>()
+                .HasOne(g => g.Teacher)
+                .WithMany(t => t.Grades)
+                .HasForeignKey(g => g.TeacherId);
+
+            builder.Entity<GuideEntity>()
+                .HasOne(g => g.Teacher)
+                .WithMany(t => t.Guides)
+                .HasForeignKey(g => g.TeacherId);
+
         }
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

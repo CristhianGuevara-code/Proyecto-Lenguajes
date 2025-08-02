@@ -2,24 +2,22 @@
 using EduRural.API.Database;
 using EduRural.API.Database.Entities;
 using EduRural.API.Dtos.Common;
-using EduRural.API.Dtos.Grades;
-using EduRural.API.Dtos.Subjects;
+using EduRural.API.Dtos.Teachers;
 using EduRural.API.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Persons.API.Constants;
 using Persons.API.Dtos.Common;
 
-
 namespace EduRural.API.Services
 {
-    public class GradesService : IGradesService
+    public class TeacherService : ITeacherService
     {
         private readonly EduRuralDbContext _context;
         private readonly IMapper _mapper;
         private readonly int PAGE_ZISE;         //readonly es para que esa variable no cambie cuando se inicialice
         private readonly int PAGE_SIZE_LIMIT;  //readonly es para que esa variable no cambie cuando se inicialice
 
-        public GradesService(EduRuralDbContext context, IMapper mapper, IConfiguration configuration)
+        public TeacherService(EduRuralDbContext context, IMapper mapper, IConfiguration configuration)
         {
             _context = context;
             _mapper = mapper;
@@ -27,43 +25,43 @@ namespace EduRural.API.Services
             PAGE_SIZE_LIMIT = configuration.GetValue<int>("PageSizeLimit");
         }
 
-        public async Task<ResponseDto<PaginationDto<List<GradeDto>>>> GetListAsync(
-              string searchTerm = "", int page = 1, int pageSize = 0)
+        public async Task<ResponseDto<PaginationDto<List<TeacherDto>>>> GetListAsync(
+             string searchTerm = "", int page = 1, int pageSize = 0)
         {
             pageSize = pageSize == 0 ? PAGE_ZISE : pageSize;
             int startIndex = (page - 1) * pageSize; // nos sirve para definir el indice inicial de la paginacion
 
-            IQueryable<GradeEntity> gradeQuery = _context.Grades;
+            IQueryable<TeacherEntity> teacherQuery = _context.Teachers;
 
             if (!string.IsNullOrEmpty(searchTerm)) //si el termino de busqueda es diferente a vacio o nulo
             {
-                gradeQuery = gradeQuery.Where
-                    (x => (x.Name).Contains(searchTerm));
+                teacherQuery = teacherQuery.Where
+                    (x => (x.Specialty).Contains(searchTerm));
             }
 
-            int totalRows = await gradeQuery.CountAsync();
+            int totalRows = await teacherQuery.CountAsync();
 
-            var gradesEntity = await gradeQuery
-                .OrderBy(x => x.Name)
+            var teachersEntity = await teacherQuery
+                .OrderBy(x => x.Specialty)
                 .Skip(startIndex)
                 .Take(pageSize)
                 .ToListAsync();
 
 
-            var gradesDto = _mapper.Map<List<GradeDto>>(gradesEntity);
+            var teachersDto = _mapper.Map<List<TeacherDto>>(teachersEntity);
 
-            return new ResponseDto<PaginationDto<List<GradeDto>>>
+            return new ResponseDto<PaginationDto<List<TeacherDto>>>
             {
                 StatusCode = HttpStatusCode.OK,
                 Status = true,
-                Message = gradesEntity.Count() > 0 ? "Registros encontrados" : "No se encontraron registros",
-                Data = new PaginationDto<List<GradeDto>>
+                Message = teachersEntity.Count() > 0 ? "Registros encontrados" : "No se encontraron registros",
+                Data = new PaginationDto<List<TeacherDto>>
                 {
                     CurrentPage = page,
                     PageSize = pageSize,
                     TotalItems = totalRows,
                     TotalPages = (int)Math.Ceiling((double)totalRows / pageSize),
-                    Items = gradesDto,
+                    Items = teachersDto,
                     HasPreviousPage = page > 1,
                     HasNextPage = startIndex + pageSize < PAGE_SIZE_LIMIT && page < (int)Math
                     .Ceiling((double)(totalRows / pageSize)),
@@ -72,57 +70,57 @@ namespace EduRural.API.Services
             };
         }
 
-        public async Task<ResponseDto<GradeDto>> GetOneByIdAsync(string id)
+        public async Task<ResponseDto<TeacherDto>> GetOneByIdAsync(string id)
         {
-            var grade = await _context.Grades.FirstOrDefaultAsync(g => g.Id == id);
+            var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.Id == id);
 
-            if (grade is null)
+            if (teacher is null)
             {
-                return new ResponseDto<GradeDto>
+                return new ResponseDto<TeacherDto>
                 {
                     StatusCode = HttpStatusCode.NOT_FOUND,
                     Status = false,
-                    Message = "Grado no encontrado"
+                    Message = "Maestro no encontrado"
                 };
             }
 
-            return new ResponseDto<GradeDto>
+            return new ResponseDto<TeacherDto>
             {
                 StatusCode = HttpStatusCode.OK,
                 Status = true,
-                Message = "Grado encontrado",
-                Data = _mapper.Map<GradeDto>(grade)
+                Message = "Maestro encontrado",
+                Data = _mapper.Map<TeacherDto>(teacher)
             };
         }
 
-        public async Task<ResponseDto<GradeActionResponseDto>> CreateAsync(GradeCreateDto dto)
+        public async Task<ResponseDto<TeacherActionResponseDto>> CreateAsync(TeacherCreateDto dto)
         {
 
-            var gradeEntity = _mapper.Map<GradeEntity>(dto); // automapper
+            var teacherEntity = _mapper.Map<TeacherEntity>(dto); // automapper
 
-            gradeEntity.Id = Guid.NewGuid().ToString();
+            teacherEntity.Id = Guid.NewGuid().ToString();
 
-            _context.Grades.Add(gradeEntity); // agregar esto en memoria de nuestro proyecto
+            _context.Teachers.Add(teacherEntity); // agregar esto en memoria de nuestro proyecto
 
             await _context.SaveChangesAsync(); // guardar los cambios
 
-            return new ResponseDto<GradeActionResponseDto>
+            return new ResponseDto<TeacherActionResponseDto>
             {
                 StatusCode = HttpStatusCode.CREATED,
                 Status = true,
                 Message = "Registro creado Correctamente",
-                Data = _mapper.Map<GradeActionResponseDto>(gradeEntity) //:: :: Automapper 
+                Data = _mapper.Map<TeacherActionResponseDto>(teacherEntity) //:: :: Automapper 
             };
         }
 
-        public async Task<ResponseDto<GradeActionResponseDto>> EditAsync(GradeEditDto dto, string id)
+        public async Task<ResponseDto<TeacherActionResponseDto>> EditAsync(TeacherEditDto dto, string id)
         {
-            var gradeEntity = await _context.Grades.FindAsync(id); // ver si existe el registro
+            var teacherEntity = await _context.Teachers.FindAsync(id); // ver si existe el registro
 
             // si no existe
-            if (gradeEntity is null)
+            if (teacherEntity is null)
             {
-                return new ResponseDto<GradeActionResponseDto>
+                return new ResponseDto<TeacherActionResponseDto>
                 {
                     StatusCode = HttpStatusCode.NOT_FOUND,
                     Status = false,
@@ -131,28 +129,28 @@ namespace EduRural.API.Services
             }
 
             //Si se encuentra el registro
-            _mapper.Map<GradeEditDto, GradeEntity>(dto, gradeEntity); //:: :: Automapper
+            _mapper.Map<TeacherEditDto, TeacherEntity>(dto, teacherEntity); //:: :: Automapper
 
-            _context.Grades.Update(gradeEntity); // guardar en memoria
+            _context.Teachers.Update(teacherEntity); // guardar en memoria
             await _context.SaveChangesAsync(); // guardar los cambios
 
-            return new ResponseDto<GradeActionResponseDto>
+            return new ResponseDto<TeacherActionResponseDto>
             {
                 StatusCode = HttpStatusCode.OK,
                 Status = true,
                 Message = "Registro modificado correctamente",
-                Data = _mapper.Map<GradeActionResponseDto>(gradeEntity)  // :: :: Automapper
+                Data = _mapper.Map<TeacherActionResponseDto>(teacherEntity)  // :: :: Automapper
             };
 
         }
 
-        public async Task<ResponseDto<GradeActionResponseDto>> DeleteAsync(string id)
+        public async Task<ResponseDto<TeacherActionResponseDto>> DeleteAsync(string id)
         {
-            var gradeEntity = await _context.Grades.FindAsync(id); // ver si existe el registro
+            var teacherEntity = await _context.Teachers.FindAsync(id); // ver si existe el registro
 
-            if (gradeEntity is null)
+            if (teacherEntity is null)
             {
-                return new ResponseDto<GradeActionResponseDto>
+                return new ResponseDto<TeacherActionResponseDto>
                 {
                     StatusCode = HttpStatusCode.NOT_FOUND,
                     Status = false,
@@ -160,11 +158,11 @@ namespace EduRural.API.Services
                 };
             }
 
-            var gradetInGuide = await _context.Guides.CountAsync(p => p.GradeId == id); // ver si la materia existe en una guia
+            var teacherInGuide = await _context.Guides.CountAsync(p => p.TeacherId == id); // ver si la materia existe en una guia
 
-            if (gradetInGuide > 0)
+            if (teacherInGuide > 0)
             {
-                return new ResponseDto<GradeActionResponseDto>
+                return new ResponseDto<TeacherActionResponseDto>
                 {
                     StatusCode = HttpStatusCode.BAD_REQUEST,
                     Status = false,
@@ -172,15 +170,15 @@ namespace EduRural.API.Services
                 };
             }
 
-            _context.Grades.Remove(gradeEntity); // borrar el registro
+            _context.Teachers.Remove(teacherEntity); // borrar el registro
             await _context.SaveChangesAsync(); // guardar los cambios
 
-            return new ResponseDto<GradeActionResponseDto>
+            return new ResponseDto<TeacherActionResponseDto>
             {
                 StatusCode = HttpStatusCode.OK,
                 Status = true,
                 Message = "Registro borrado correctamente",
-                Data = _mapper.Map<GradeActionResponseDto>(gradeEntity)
+                Data = _mapper.Map<TeacherActionResponseDto>(teacherEntity)
             };
         }
     }
