@@ -3,7 +3,11 @@ import { Navigate, Routes, Route, Outlet } from 'react-router-dom';
 import { HomePage, PlatformPage, ForumPage } from '../pages';
 import QuizPage from '../pages/QuizPage';
 import GradesPage from '../pages/GradesPage';
+import ProfessorPage from '../pages/ProfessorPage';
+import TaskPage from '../pages/TaskPage';
+import AssignmentsPage from '../pages/AssignmentsPage';
 import LoginPage from '../pages/security/auth/LoginPage';
+
 
 // Layout que incluye Navbar y Footer
 const Layout = () => (
@@ -27,7 +31,10 @@ export const PlatformRouter = () => {
 
         {/* Rutas privadas: todo lo demás con layout */}
         <Route element={<Layout />}>
+          <Route path="/assignments" element={<AssignmentsPage />} />
+          <Route path="/task" element={<TaskPage />} />
           <Route path="/grades" element={<GradesPage />} />
+          <Route path="/professor" element={<ProfessorPage />} />
           <Route path="/home" element={<HomePage />} />
           <Route path="/platform" element={<PlatformPage />} />
           <Route path="/quiz" element={<QuizPage />} />

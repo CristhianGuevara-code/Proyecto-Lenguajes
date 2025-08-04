@@ -16,7 +16,7 @@ const Progress: React.FC<ProgressProps> = ({ value = 0, label = "Progreso" }) =>
 
   return (
     <div className="w-full">
-      <div className="flex justify-between mb-1">
+      <div className="flex justify-between mb-4">
         <span className="text-sm font-medium text-gray-700">{label}</span>
         <span className="text-sm font-medium text-gray-700">{value}%</span>
       </div>
