@@ -5,7 +5,11 @@ meta {
 }
 
 get {
-  url: {{PATH}}/users
+  url: {{PATH}}/users/b669e368-e594-4ced-aadc-9a454827af36
   body: none
-  auth: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{TOKEN}}
 }

@@ -4,6 +4,7 @@ using EduRural.API.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EduRural.API.Migrations
 {
     [DbContext(typeof(EduRuralDbContext))]
-    partial class EduRuralDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250804005116_DeleteRelation")]
+    partial class DeleteRelation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -624,13 +627,11 @@ namespace EduRural.API.Migrations
                 {
                     b.HasOne("EduRural.API.Database.Entities.StudentEntity", "Student")
                         .WithMany("StudentSubjects")
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("StudentId");
 
                     b.HasOne("EduRural.API.Database.Entities.SubjectEntity", "Subject")
                         .WithMany("StudentSubjects")
-                        .HasForeignKey("SubjectId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("SubjectId");
 
                     b.Navigation("Student");
 
@@ -651,13 +652,11 @@ namespace EduRural.API.Migrations
                 {
                     b.HasOne("EduRural.API.Database.Entities.SubjectEntity", "Subject")
                         .WithMany("TeacherSubjects")
-                        .HasForeignKey("SubjectId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("SubjectId");
 
                     b.HasOne("EduRural.API.Database.Entities.TeacherEntity", "Teacher")
                         .WithMany("TeacherSubjects")
-                        .HasForeignKey("TeacherId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("TeacherId");
 
                     b.Navigation("Subject");
 

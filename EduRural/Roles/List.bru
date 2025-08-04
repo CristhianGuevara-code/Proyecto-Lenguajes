@@ -5,7 +5,17 @@ meta {
 }
 
 get {
-  url: {{PATH}}/roles
+  url: {{PATH}}/roles?SearchTerm&Page=1&PageSize=10
   body: none
-  auth: none
+  auth: bearer
+}
+
+query {
+  SearchTerm: 
+  Page: 1
+  PageSize: 10
+}
+
+auth:bearer {
+  token: {{TOKEN}}
 }

@@ -5,18 +5,22 @@ meta {
 }
 
 put {
-  url: {{PATH}}/users/2154f4d3-8052-40d6-ab40-b17694622ba4
+  url: {{PATH}}/users/b669e368-e594-4ced-aadc-9a454827af36
   body: json
-  auth: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{TOKEN}}
 }
 
 body:json {
   {
-    "fullName": "Juan Perez",
-    "email": "perejuanito@gmail.com",
+    "fullName":"Pedro Hernández",
+    "email": "pedrITOooH@gmail.com",
     "birthDate": "2002-05-29",
     "roles": [
-      "PROFESOR"
+      "PADRE"
     ],
     "password": "ConTra1!",
     "confirmPassword": "ConTra1!"

@@ -5,22 +5,11 @@ meta {
 }
 
 delete {
-  url: {{PATH}}/teachers/
-  body: json
+  url: {{PATH}}/teachers/f6e11fda-ade0-4b68-84a4-95fc8c5b9822
+  body: none
   auth: bearer
 }
 
 auth:bearer {
   token: {{TOKEN}}
-}
-
-body:json {
-  {
-    "userId": "2154f4d3-8052-40d6-ab40-b17694622ba4",
-    "phoneNumber": "9754-2189",
-    "specialty": "Educación Primaria",
-    "subjectIds": [
-      ""
-    ]
-  }
 }

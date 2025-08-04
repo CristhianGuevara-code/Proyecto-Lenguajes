@@ -56,6 +56,8 @@ namespace EduRural.API.Controllers
         [Authorize(Roles = $"{RolesConstant.PROFESOR}, {RolesConstant.PADRE}")]
         public async Task<ActionResult<ResponseDto<TeacherActionResponseDto>>> Post([FromBody] TeacherCreateDto dto)
         {
+            Console.WriteLine($"DTO.UserId: {dto.UserId}");
+
             var response = await _teachersService.CreateAsync(dto);
 
             return StatusCode(response.StatusCode, new

@@ -8,7 +8,6 @@ import {
   MDBCheckbox,
   MDBIcon
 } from 'mdb-react-ui-kit';
-//import authEduRuralApi from '../api/authEduRuralApi'; // Asegúrate que la ruta sea correcta
 import { authEduRuralApi } from '../../../../../core/api/auth.edurural.api';
 import { useNavigate } from 'react-router-dom';
 

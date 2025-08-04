@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EduRural.API.Migrations
 {
     [DbContext(typeof(EduRuralDbContext))]
-    [Migration("20250730062220_NewTables")]
-    partial class NewTables
+    [Migration("20250803234116_AddDBAgain")]
+    partial class AddDBAgain
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -297,6 +297,9 @@ namespace EduRural.API.Migrations
                         .HasColumnType("nvarchar(50)")
                         .HasColumnName("name");
 
+                    b.Property<string>("TeacherEntityId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("updated_by");
@@ -306,6 +309,8 @@ namespace EduRural.API.Migrations
                         .HasColumnName("updated_date");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("TeacherEntityId");
 
                     b.ToTable("edu_subjects");
                 });
@@ -353,6 +358,28 @@ namespace EduRural.API.Migrations
                         .HasFilter("[user_id] IS NOT NULL");
 
                     b.ToTable("edu_teachers");
+                });
+
+            modelBuilder.Entity("EduRural.API.Database.Entities.TeacherSubjectEntity", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("SubjectId")
+                        .HasColumnType("nvarchar(450)")
+                        .HasColumnName("subject_id");
+
+                    b.Property<string>("TeacherId")
+                        .HasColumnType("nvarchar(450)")
+                        .HasColumnName("teacher_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SubjectId");
+
+                    b.HasIndex("TeacherId");
+
+                    b.ToTable("edu_teachers_subjects");
                 });
 
             modelBuilder.Entity("EduRural.API.Database.Entities.UserEntity", b =>
@@ -580,7 +607,8 @@ namespace EduRural.API.Migrations
                 {
                     b.HasOne("EduRural.API.Database.Entities.UserEntity", "User")
                         .WithOne("Parent")
-                        .HasForeignKey("EduRural.API.Database.Entities.ParentEntity", "UserId");
+                        .HasForeignKey("EduRural.API.Database.Entities.ParentEntity", "UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("User");
                 });
@@ -615,13 +643,36 @@ namespace EduRural.API.Migrations
                     b.Navigation("Subject");
                 });
 
+            modelBuilder.Entity("EduRural.API.Database.Entities.SubjectEntity", b =>
+                {
+                    b.HasOne("EduRural.API.Database.Entities.TeacherEntity", null)
+                        .WithMany("Subjects")
+                        .HasForeignKey("TeacherEntityId");
+                });
+
             modelBuilder.Entity("EduRural.API.Database.Entities.TeacherEntity", b =>
                 {
                     b.HasOne("EduRural.API.Database.Entities.UserEntity", "User")
                         .WithOne("Teacher")
-                        .HasForeignKey("EduRural.API.Database.Entities.TeacherEntity", "UserId");
+                        .HasForeignKey("EduRural.API.Database.Entities.TeacherEntity", "UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("EduRural.API.Database.Entities.TeacherSubjectEntity", b =>
+                {
+                    b.HasOne("EduRural.API.Database.Entities.SubjectEntity", "Subject")
+                        .WithMany("TeacherSubjects")
+                        .HasForeignKey("SubjectId");
+
+                    b.HasOne("EduRural.API.Database.Entities.TeacherEntity", "Teacher")
+                        .WithMany("TeacherSubjects")
+                        .HasForeignKey("TeacherId");
+
+                    b.Navigation("Subject");
+
+                    b.Navigation("Teacher");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -695,6 +746,8 @@ namespace EduRural.API.Migrations
                     b.Navigation("Guides");
 
                     b.Navigation("StudentSubjects");
+
+                    b.Navigation("TeacherSubjects");
                 });
 
             modelBuilder.Entity("EduRural.API.Database.Entities.TeacherEntity", b =>
@@ -702,6 +755,10 @@ namespace EduRural.API.Migrations
                     b.Navigation("Grades");
 
                     b.Navigation("Guides");
+
+                    b.Navigation("Subjects");
+
+                    b.Navigation("TeacherSubjects");
                 });
 
             modelBuilder.Entity("EduRural.API.Database.Entities.UserEntity", b =>

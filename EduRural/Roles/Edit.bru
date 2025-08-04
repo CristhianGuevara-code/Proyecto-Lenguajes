@@ -5,14 +5,18 @@ meta {
 }
 
 put {
-  url: {{PATH}}/roles/261121c3-811d-4dd2-93d8-55b25eb80484
+  url: {{PATH}}/roles/18df973b-c89f-4fb2-bf7b-d62bdcc25f50
   body: json
-  auth: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{TOKEN}}
 }
 
 body:json {
   {
-    "name": "PROFESOR",
+    "name": "PAD",
     "description": "ADMINISTRADOR"
   }
 }

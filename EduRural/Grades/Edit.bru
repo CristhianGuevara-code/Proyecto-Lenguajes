@@ -5,9 +5,13 @@ meta {
 }
 
 put {
-  url: {{PATH}}/grades/4d22e985-677c-4cdc-b1d1-6ffc9c73d164
+  url: {{PATH}}/grades/df3fd802-58c3-457e-9bee-5794cd95dcd2
   body: json
-  auth: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{TOKEN}}
 }
 
 body:json {

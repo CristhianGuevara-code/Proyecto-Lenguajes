@@ -24,5 +24,11 @@ namespace EduRural.API.Database.Entities
 
         // Relación con las guías que ha subido
         public ICollection<GuideEntity> Guides { get; set; }
+
+       // public ICollection<SubjectEntity> Subjects { get; set; }
+
+        // Relación con Subjects
+        public ICollection<TeacherSubjectEntity> TeacherSubjects { get; set; }
+
     }
 }

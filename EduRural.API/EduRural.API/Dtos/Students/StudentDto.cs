@@ -12,8 +12,8 @@ namespace EduRural.API.Dtos.Students
         public string GradeId { get; set; }
         public string GradeName { get; set; }
 
-        // Si querés devolver las materias
-        public List<SubjectDto> Subjects { get; set; }
+        // Lista de materias asociadas
+        public List<SubjectDto> SubjectsIds { get; set; }
     }
 
 }

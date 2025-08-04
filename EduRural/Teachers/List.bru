@@ -5,9 +5,15 @@ meta {
 }
 
 get {
-  url: {{PATH}}/teachers
+  url: {{PATH}}/teachers?SearchTerm&Page=1&PageSize=10
   body: none
   auth: bearer
+}
+
+query {
+  SearchTerm: 
+  Page: 1
+  PageSize: 10
 }
 
 auth:bearer {

@@ -22,7 +22,7 @@ namespace EduRural.API.Controllers
 
         //Obtener lista
         [HttpGet]
-        [Authorize(Roles = $"{RolesConstant.PROFESOR}")]
+        [Authorize(Roles = $"{RolesConstant.PROFESOR}, {RolesConstant.PADRE}")]
         public async Task<ActionResult<ResponseDto<PaginationDto<List<GradeDto>>>>> GetList(
             string searchTerm = "", int page = 1, int pageSize = 0)
         {

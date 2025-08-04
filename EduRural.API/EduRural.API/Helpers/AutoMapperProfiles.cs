@@ -59,14 +59,22 @@ namespace EduRural.API.Helpers
             CreateMap<ParentEditDto, ParentEntity>();
 
             // Student 
-            CreateMap<StudentEntity, StudentDto>();
+            CreateMap<StudentEntity, StudentDto>()
+            .ForMember(dest => dest.SubjectsIds, opt => opt
+            .MapFrom(src => src.StudentSubjects.Select(ss => ss.SubjectId).ToList()));
             CreateMap<StudentEntity, StudentActionResponseDto>();
+            
             CreateMap<StudentCreateDto, StudentEntity>();
             CreateMap<StudentEditDto, StudentEntity>();
 
             // Teacher 
-            CreateMap<TeacherEntity, TeacherDto>();
-            CreateMap<TeacherEntity, TeacherActionResponseDto>();
+            CreateMap<TeacherEntity, TeacherDto>()
+            .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.User.FullName))
+            .ForMember(dest => dest.Subjects, opt => opt.MapFrom(src => src.TeacherSubjects.Select(ts => ts.Subject)));
+            CreateMap<TeacherEntity, TeacherActionResponseDto>()
+            .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.User.FullName))
+            .ForMember(dest => dest.Subjects, opt => opt.MapFrom(src => src.TeacherSubjects.Select(ts => ts.Subject)));
+
             CreateMap<TeacherCreateDto, TeacherEntity>();
             CreateMap<TeacherEditDto, TeacherEntity>();
         }

@@ -14,8 +14,8 @@ namespace EduRural.API.Services
     {
         private readonly EduRuralDbContext _context;
         private readonly IMapper _mapper;
-        private readonly int PAGE_ZISE;         //readonly es para que esa variable no cambie cuando se inicialice
-        private readonly int PAGE_SIZE_LIMIT;  //readonly es para que esa variable no cambie cuando se inicialice
+        private readonly int PAGE_ZISE;
+        private readonly int PAGE_SIZE_LIMIT;
 
         public StudentService(EduRuralDbContext context, IMapper mapper, IConfiguration configuration)
         {
@@ -25,18 +25,18 @@ namespace EduRural.API.Services
             PAGE_SIZE_LIMIT = configuration.GetValue<int>("PageSizeLimit");
         }
 
-        public async Task<ResponseDto<PaginationDto<List<StudentDto>>>> GetListAsync(
-              string searchTerm = "", int page = 1, int pageSize = 0)
+        public async Task<ResponseDto<PaginationDto<List<StudentDto>>>> GetListAsync(string searchTerm = "", int page = 1, int pageSize = 0)
         {
             pageSize = pageSize == 0 ? PAGE_ZISE : pageSize;
-            int startIndex = (page - 1) * pageSize; // nos sirve para definir el indice inicial de la paginacion
+            int startIndex = (page - 1) * pageSize;
 
-            IQueryable<StudentEntity> studentQuery = _context.Students;
+            IQueryable<StudentEntity> studentQuery = _context.Students
+                .Include(s => s.StudentSubjects)  // Incluir tabla intermedia
+                .ThenInclude(ss => ss.Subject);   // Y las materias
 
-            if (!string.IsNullOrEmpty(searchTerm)) //si el termino de busqueda es diferente a vacio o nulo
+            if (!string.IsNullOrEmpty(searchTerm))
             {
-                studentQuery = studentQuery.Where
-                    (x => (x.FullName).Contains(searchTerm));
+                studentQuery = studentQuery.Where(x => x.FullName.Contains(searchTerm));
             }
 
             int totalRows = await studentQuery.CountAsync();
@@ -47,14 +47,13 @@ namespace EduRural.API.Services
                 .Take(pageSize)
                 .ToListAsync();
 
-
             var studentsDto = _mapper.Map<List<StudentDto>>(studentsEntity);
 
             return new ResponseDto<PaginationDto<List<StudentDto>>>
             {
                 StatusCode = HttpStatusCode.OK,
                 Status = true,
-                Message = studentsEntity.Count() > 0 ? "Registros encontrados" : "No se encontraron registros",
+                Message = studentsEntity.Count > 0 ? "Registros encontrados" : "No se encontraron registros",
                 Data = new PaginationDto<List<StudentDto>>
                 {
                     CurrentPage = page,
@@ -63,16 +62,17 @@ namespace EduRural.API.Services
                     TotalPages = (int)Math.Ceiling((double)totalRows / pageSize),
                     Items = studentsDto,
                     HasPreviousPage = page > 1,
-                    HasNextPage = startIndex + pageSize < PAGE_SIZE_LIMIT && page < (int)Math
-                    .Ceiling((double)(totalRows / pageSize)),
-
+                    HasNextPage = startIndex + pageSize < PAGE_SIZE_LIMIT && page < (int)Math.Ceiling((double)(totalRows / pageSize)),
                 }
             };
         }
 
         public async Task<ResponseDto<StudentDto>> GetOneByIdAsync(string id)
         {
-            var student = await _context.Students.FirstOrDefaultAsync(s => s.Id == id);
+            var student = await _context.Students
+                .Include(s => s.StudentSubjects)
+                .ThenInclude(ss => ss.Subject)
+                .FirstOrDefaultAsync(s => s.Id == id);
 
             if (student is null)
             {
@@ -88,36 +88,55 @@ namespace EduRural.API.Services
             {
                 StatusCode = HttpStatusCode.OK,
                 Status = true,
-                Message = "Grado encontrado",
+                Message = "Alumno encontrado",
                 Data = _mapper.Map<StudentDto>(student)
             };
         }
 
         public async Task<ResponseDto<StudentActionResponseDto>> CreateAsync(StudentCreateDto dto)
         {
-
-            var studentEntity = _mapper.Map<StudentEntity>(dto); // automapper
-
+            var studentEntity = _mapper.Map<StudentEntity>(dto);
             studentEntity.Id = Guid.NewGuid().ToString();
 
-            _context.Students.Add(studentEntity); // agregar esto en memoria de nuestro proyecto
+            // Asignar relaciones StudentSubjects según dto.SubjectIds (tienes que agregar SubjectIds en dto)
+            if (dto.SubjectIds != null && dto.SubjectIds.Any())
+            {
+                studentEntity.StudentSubjects = new List<StudentSubjectEntity>();
 
-            await _context.SaveChangesAsync(); // guardar los cambios
+                foreach (var subjectId in dto.SubjectIds)
+                {
+                    studentEntity.StudentSubjects.Add(new StudentSubjectEntity
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        SubjectId = subjectId,
+                        StudentId = studentEntity.Id
+                    });
+                }
+            }
+
+            _context.Students.Add(studentEntity);
+            await _context.SaveChangesAsync();
+
+            var studentWithIncludes = await _context.Students
+                .Include(s => s.StudentSubjects)
+                .ThenInclude(ss => ss.Subject)
+                .FirstOrDefaultAsync(s => s.Id == studentEntity.Id);
 
             return new ResponseDto<StudentActionResponseDto>
             {
                 StatusCode = HttpStatusCode.CREATED,
                 Status = true,
-                Message = "Registro creado Correctamente",
-                Data = _mapper.Map<StudentActionResponseDto>(studentEntity) //:: :: Automapper 
+                Message = "Registro creado correctamente",
+                Data = _mapper.Map<StudentActionResponseDto>(studentWithIncludes)
             };
         }
 
         public async Task<ResponseDto<StudentActionResponseDto>> EditAsync(StudentEditDto dto, string id)
         {
-            var studentEntity = await _context.Students.FindAsync(id); // ver si existe el registro
+            var studentEntity = await _context.Students
+                .Include(s => s.StudentSubjects)
+                .FirstOrDefaultAsync(s => s.Id == id);
 
-            // si no existe
             if (studentEntity is null)
             {
                 return new ResponseDto<StudentActionResponseDto>
@@ -128,25 +147,46 @@ namespace EduRural.API.Services
                 };
             }
 
-            //Si se encuentra el registro
-            _mapper.Map<StudentEditDto, StudentEntity>(dto, studentEntity); //:: :: Automapper
+            _mapper.Map(dto, studentEntity);
 
-            _context.Students.Update(studentEntity); // guardar en memoria
-            await _context.SaveChangesAsync(); // guardar los cambios
+            // Actualizar StudentSubjects
+            if (dto.SubjectIds != null)
+            {
+                // Limpiar las existentes
+                studentEntity.StudentSubjects.Clear();
+
+                // Agregar las nuevas
+                foreach (var subjectId in dto.SubjectIds)
+                {
+                    studentEntity.StudentSubjects.Add(new StudentSubjectEntity
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        SubjectId = subjectId,
+                        StudentId = studentEntity.Id
+                    });
+                }
+            }
+
+            _context.Students.Update(studentEntity);
+            await _context.SaveChangesAsync();
+
+            var studentWithIncludes = await _context.Students
+                .Include(s => s.StudentSubjects)
+                .ThenInclude(ss => ss.Subject)
+                .FirstOrDefaultAsync(s => s.Id == studentEntity.Id);
 
             return new ResponseDto<StudentActionResponseDto>
             {
                 StatusCode = HttpStatusCode.OK,
                 Status = true,
                 Message = "Registro modificado correctamente",
-                Data = _mapper.Map<StudentActionResponseDto>(studentEntity)  // :: :: Automapper
+                Data = _mapper.Map<StudentActionResponseDto>(studentWithIncludes)
             };
-
         }
 
         public async Task<ResponseDto<StudentActionResponseDto>> DeleteAsync(string id)
         {
-            var studentEntity = await _context.Students.FindAsync(id); // ver si existe el registro
+            var studentEntity = await _context.Students.FindAsync(id);
 
             if (studentEntity is null)
             {
@@ -158,20 +198,8 @@ namespace EduRural.API.Services
                 };
             }
 
-            //var gradetInGuide = await _context.Guides.CountAsync(p => p.GradeId == id); // ver si la materia existe en una guia
-
-            //if (gradetInGuide > 0)
-            //{
-            //    return new ResponseDto<GradeActionResponseDto>
-            //    {
-            //        StatusCode = HttpStatusCode.BAD_REQUEST,
-            //        Status = false,
-            //        Message = "El grado tiene datos relaionados"
-            //    };
-            //}
-
-            _context.Students.Remove(studentEntity); // borrar el registro
-            await _context.SaveChangesAsync(); // guardar los cambios
+            _context.Students.Remove(studentEntity);
+            await _context.SaveChangesAsync();
 
             return new ResponseDto<StudentActionResponseDto>
             {

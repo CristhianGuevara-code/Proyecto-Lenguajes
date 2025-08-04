@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using EduRural.API.Database.Entities;
 using EduRural.API.Database.Entities.Common;
 using EduRural.API.Services.Interfaces;
+using System.Reflection.Emit;
 
 namespace EduRural.API.Database
 {
@@ -27,6 +28,9 @@ namespace EduRural.API.Database
         public DbSet<StudentEntity> Students { get; set; }
         public DbSet<ParentEntity> Parents { get; set; }
         public DbSet<TeacherEntity> Teachers { get; set; }
+        public DbSet<TeacherSubjectEntity> TeacherSubject { get; set; }
+        public DbSet<StudentSubjectEntity> StudentSubjects { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -52,6 +56,43 @@ namespace EduRural.API.Database
                 .HasOne(g => g.Teacher)
                 .WithMany(t => t.Guides)
                 .HasForeignKey(g => g.TeacherId);
+
+            builder.Entity<TeacherEntity>()
+                .HasOne(t => t.User)
+                .WithOne(u => u.Teacher)
+                .HasForeignKey<TeacherEntity>(t => t.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<UserEntity>()
+                .HasOne(u => u.Parent)
+                .WithOne(p => p.User)
+                .HasForeignKey<ParentEntity>(p => p.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Relación muchos a muchos: Student - Subject
+            builder.Entity<StudentSubjectEntity>()
+                .HasOne(ss => ss.Student)
+                .WithMany(s => s.StudentSubjects)
+                .HasForeignKey(ss => ss.StudentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<StudentSubjectEntity>()
+                .HasOne(ss => ss.Subject)
+                .WithMany(s => s.StudentSubjects)
+                .HasForeignKey(ss => ss.SubjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Relación muchos a muchos: Teacher - Subject
+            builder.Entity<TeacherSubjectEntity>()
+                .HasOne(ts => ts.Teacher)
+                .WithMany(t => t.TeacherSubjects)
+                .HasForeignKey(ts => ts.TeacherId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<TeacherSubjectEntity>()
+                .HasOne(ts => ts.Subject)
+                .WithMany(s => s.TeacherSubjects)
+                .HasForeignKey(ts => ts.SubjectId)
+                .OnDelete(DeleteBehavior.Cascade);
 
         }
 
