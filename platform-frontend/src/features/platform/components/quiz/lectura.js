@@ -1,4 +1,4 @@
-// lectura.js
+
 const lectura = {
   titulo: "El pequeño oso llamado Nico",
   contenido: `

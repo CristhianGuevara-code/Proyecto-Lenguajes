@@ -1,24 +1,209 @@
-const asignaturas = [
-  { id: 1, titulo: 'Español', descripcion: '2 asignaciones pendientes por hacer', imagen: 'https://plus.unsplash.com/premium_photo-1666739032615-ecbd14dfb543?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
-  { id: 2, titulo: 'Matematicas', descripcion: '1 asignacion pendiente por hacer', imagen: 'https://plus.unsplash.com/premium_photo-1717972599101-33a39b433362?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8bWF0ZW1hdGljYXMlMjBwYXJhJTIwbmklQzMlQjFvc3xlbnwwfHwwfHx8MA%3D%3D' },
-  { id: 3, titulo: 'Ciencias Naturales', descripcion: 'Sin asignaciones', imagen: 'https://plus.unsplash.com/premium_photo-1676325102346-7f0f536d1f2f?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
-  { id: 4, titulo: 'Estudios Sociales', descripcion: 'Sin asignaciones', imagen: 'https://plus.unsplash.com/premium_photo-1661373619731-0d4ac1774f21?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
-  { id: 5, titulo: 'Arte', descripcion: '1 asignacion pendiente por hacer', imagen: 'https://images.unsplash.com/photo-1560421683-6856ea585c78?q=80&w=874&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
-  { id: 6, titulo: 'Música', descripcion: 'Sin asignaciones', imagen: 'https://images.unsplash.com/photo-1575314113965-c6672a42b99c?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
-  { id: 7, titulo: 'Educación Física', descripcion: 'Sin asignaciones', imagen: 'https://images.unsplash.com/photo-1494778696781-8f23fd5553c4?q=80&w=722&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
-  { id: 7, titulo: 'Tecnologia', descripcion: 'Sin asignaciones', imagen: 'https://images.unsplash.com/photo-1515378960530-7c0da6231fb1?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
-];
+import { useState, useEffect } from "react";
 
 export const HomePage = () => {
+  const [asignaturas, setAsignaturas] = useState(() => {
+    const dataGuardada = localStorage.getItem("asignaturas");
+    return dataGuardada ? JSON.parse(dataGuardada) : [];
+  });
+
+  const [nuevaAsignatura, setNuevaAsignatura] = useState({
+    titulo: "",
+    imagenUrl: "",
+    imagenFile: null,
+    color: "#bae6fd",
+  });
+
+  const [modoEdicion, setModoEdicion] = useState(false);
+  const [asignaturaEditando, setAsignaturaEditando] = useState(null);
+
+  useEffect(() => {
+    localStorage.setItem("asignaturas", JSON.stringify(asignaturas));
+  }, [asignaturas]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setNuevaAsignatura({
+      ...nuevaAsignatura,
+      [name]: value,
+    });
+  };
+
+  const convertToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const base64Image = await convertToBase64(file);
+      setNuevaAsignatura({
+        ...nuevaAsignatura,
+        imagenUrl: base64Image,
+        imagenFile: file,
+      });
+    }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!nuevaAsignatura.titulo || !nuevaAsignatura.imagenUrl) return;
+
+    if (modoEdicion && asignaturaEditando) {
+      const actualizadas = asignaturas.map((asig) =>
+        asig.id === asignaturaEditando.id
+          ? {
+              ...asig,
+              titulo: nuevaAsignatura.titulo,
+              imagen: nuevaAsignatura.imagenUrl,
+              color: nuevaAsignatura.color,
+            }
+          : asig
+      );
+      setAsignaturas(actualizadas);
+      setModoEdicion(false);
+      setAsignaturaEditando(null);
+    } else {
+      const nueva = {
+        id: Date.now(),
+        titulo: nuevaAsignatura.titulo,
+        imagen: nuevaAsignatura.imagenUrl,
+        color: nuevaAsignatura.color,
+      };
+      setAsignaturas([...asignaturas, nueva]);
+    }
+    resetForm();
+  };
+
+  const resetForm = () => {
+    setNuevaAsignatura({
+      titulo: "",
+      imagenUrl: "",
+      imagenFile: null,
+      color: "#bae6fd",
+    });
+    setModoEdicion(false);
+    setAsignaturaEditando(null);
+  };
+
+  const handleDelete = (id) => {
+    const confirm = window.confirm(
+      "¿Estás seguro de que deseas eliminar esta asignatura? Esta acción es permanente y todos los archivos relacionados se perderán para siempre."
+    );
+    if (confirm) {
+      setAsignaturas(asignaturas.filter((a) => a.id !== id));
+      if (modoEdicion && asignaturaEditando?.id === id) {
+        resetForm();
+      }
+    }
+  };
+
+  const handleEditar = (asig) => {
+    setNuevaAsignatura({
+      titulo: asig.titulo,
+      imagenUrl: asig.imagen,
+      imagenFile: null,
+      color: asig.color,
+    });
+    setModoEdicion(true);
+    setAsignaturaEditando(asig);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
-    <div className="p-6 bg-gray-100 bg-transparent min-h-screen">
-      <h1 className="text-3xl font-bold text-platform-bluedark mb-6">Mis asignaturas:</h1>
+    <div className="p-6 bg-transparent min-h-screen">
+      <h1 className="text-3xl font-bold text-platform-bluedark mb-6">
+        Mis asignaturas:
+      </h1>
+
+      <form
+        onSubmit={handleSubmit}
+        className="mb-8 bg-white shadow-md p-6 rounded-xl w-full"
+      >
+        <h2 className="text-xl font-semibold mb-4">
+          {modoEdicion ? "Editar asignatura" : "Crear nueva asignatura:"}
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+          <div>
+            <label className="block font-medium mb-1">Nombre:</label>
+            <input
+              type="text"
+              name="titulo"
+              value={nuevaAsignatura.titulo}
+              onChange={handleChange}
+              className="w-full border p-2 rounded"
+              placeholder="Nombre de la asignatura"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block font-medium mb-1">Pegue una URL de imagen:</label>
+            <input
+              type="text"
+              name="imagenUrl"
+              value={nuevaAsignatura.imagenUrl}
+              onChange={handleChange}
+              className="w-full border p-2 rounded"
+              placeholder="Pega una URL o sube archivo"
+            />
+          </div>
+
+          <div>
+            <label className="block font-medium mb-1">O Puede elegir una imagen:</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="w-full border p-2 rounded"
+            />
+          </div>
+
+          <div>
+            <label className="block font-medium mb-1">Color de la asignatura:</label>
+            <input
+              type="color"
+              name="color"
+              value={nuevaAsignatura.color}
+              onChange={handleChange}
+              className="w-full h-10 rounded cursor-pointer"
+            />
+          </div>
+        </div>
+
+        {nuevaAsignatura.imagenUrl && (
+          <div className="mt-4">
+            <p className="font-medium mb-1">Vista previa:</p>
+            <img
+              src={nuevaAsignatura.imagenUrl}
+              alt="Vista previa"
+              className="w-full max-w-sm h-40 object-cover rounded-lg shadow"
+            />
+          </div>
+        )}
+
+        <div className="mt-4 flex gap-3">
+          <button type="submit" className="btn-sm btn-agregar">
+            {modoEdicion ? "Guardar cambios" : "Agregar"}
+          </button>
+
+          <button type="button" onClick={resetForm} className="btn-sm btn-cancelar">
+            Cancelar
+          </button>
+        </div>
+      </form>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 w-full">
         {asignaturas.map((asig) => (
           <div
             key={asig.id}
-            className="w-full rounded-2xl overflow-hidden shadow-lg bg-platform-brightblue hover:shadow-xl transition duration-300"
+            className="w-full rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition duration-300"
+            style={{ backgroundColor: asig.color }}
           >
             <img
               className="w-full h-40 object-cover"
@@ -27,7 +212,22 @@ export const HomePage = () => {
             />
             <div className="p-4">
               <h2 className="text-xl font-semibold text-gray-800">{asig.titulo}</h2>
-              <p className="text-sm text-gray-600 mt-2">{asig.descripcion}</p>
+
+              <div className="flex justify-end gap-2 mt-4">
+                <button
+                  className="btn-card btn-editar"
+                  onClick={() => handleEditar(asig)}
+                >
+                  Editar
+                </button>
+
+                <button
+                  className="btn-card btn-eliminar"
+                  onClick={() => handleDelete(asig.id)}
+                >
+                  Eliminar
+                </button>
+              </div>
             </div>
           </div>
         ))}
