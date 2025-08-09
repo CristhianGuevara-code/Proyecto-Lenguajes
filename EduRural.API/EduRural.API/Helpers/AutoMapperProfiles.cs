@@ -53,19 +53,36 @@ namespace EduRural.API.Helpers
             CreateMap<UserEditDto, UserEntity>();
 
             // Parent 
-            CreateMap<ParentEntity, ParentDto>();
-            CreateMap<ParentEntity, ParentActionResponseDto>();
+            CreateMap<ParentEntity, ParentDto>()
+            .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.User.FullName))
+            .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
+            .ForMember(dest => dest.Students, opt => opt.MapFrom(src => src.Students));
+            CreateMap<ParentEntity, ParentActionResponseDto>()
+            .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.User.FullName))
+            .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
+            .ForMember(dest => dest.Students, opt => opt.MapFrom(src => src.Students));
             CreateMap<ParentCreateDto, ParentEntity>();
             CreateMap<ParentEditDto, ParentEntity>();
 
             // Student 
             CreateMap<StudentEntity, StudentDto>()
-            .ForMember(dest => dest.SubjectsIds, opt => opt
-            .MapFrom(src => src.StudentSubjects.Select(ss => ss.SubjectId).ToList()));
-            CreateMap<StudentEntity, StudentActionResponseDto>();
-            
-            CreateMap<StudentCreateDto, StudentEntity>();
-            CreateMap<StudentEditDto, StudentEntity>();
+                .ForMember(dest => dest.SubjectsIds, opt => opt.MapFrom(src =>
+                    (src.StudentSubjects ?? new List<StudentSubjectEntity>())
+                        .Select(ss => ss.SubjectId)))
+                .ForMember(dest => dest.GradeName, opt => opt.MapFrom(src => src.Grade.Name));
+
+            CreateMap<StudentEntity, StudentActionResponseDto>()
+                .ForMember(dest => dest.Subjects, opt => opt.MapFrom(src =>
+                    (src.StudentSubjects ?? new List<StudentSubjectEntity>())
+                        .Select(ss => ss.Subject)))
+                .ForMember(dest => dest.GradeName, opt => opt.MapFrom(src => src.Grade.Name));
+
+            CreateMap<StudentCreateDto, StudentEntity>()
+                .ForMember(dest => dest.StudentSubjects, opt => opt.Ignore());
+
+            CreateMap<StudentEditDto, StudentEntity>()
+                .ForMember(dest => dest.StudentSubjects, opt => opt.Ignore());
+
 
             // Teacher 
             CreateMap<TeacherEntity, TeacherDto>()

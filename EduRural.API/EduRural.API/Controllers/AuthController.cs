@@ -33,5 +33,19 @@ namespace EduRural.API.Controllers
 
             });
         }
+
+        [HttpPost("refresh-token")]
+        [AllowAnonymous]
+        public async Task<ActionResult<ResponseDto<LoginResponseDto>>> RefreshToken([FromBody] RefreshTokenDto dto)
+        {
+            var response = await _authService.RefreshTokenAsync(dto);
+
+            return StatusCode(response.StatusCode, new ResponseDto<LoginResponseDto>
+            {
+                Status = response.Status,
+                Message = response.Message,
+                Data = response.Data
+            });
+        }
     }
 }

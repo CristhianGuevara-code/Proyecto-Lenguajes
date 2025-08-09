@@ -8,6 +8,9 @@ using Microsoft.EntityFrameworkCore;
 using Persons.API.Dtos.Common;
 using EduRural.API.Dtos.Parents;
 using Persons.API.Constants;
+using EduRural.API.Constants;
+using Microsoft.AspNetCore.Identity;
+using EduRural.API.Dtos.Users;
 
 namespace EduRural.API.Services
 {
@@ -15,13 +18,16 @@ namespace EduRural.API.Services
     {
         private readonly EduRuralDbContext _context;
         private readonly IMapper _mapper;
+        private readonly UserManager<UserEntity> _userManager;
         private readonly int PAGE_ZISE;         //readonly es para que esa variable no cambie cuando se inicialice
         private readonly int PAGE_SIZE_LIMIT;  //readonly es para que esa variable no cambie cuando se inicialice
 
-        public ParentService(EduRuralDbContext context, IMapper mapper, IConfiguration configuration)
+        public ParentService(EduRuralDbContext context, IMapper mapper,
+            UserManager<UserEntity> userManager, IConfiguration configuration)
         {
             _context = context;
             _mapper = mapper;
+            _userManager = userManager;
             PAGE_ZISE = configuration.GetValue<int>("PageSize");
             PAGE_SIZE_LIMIT = configuration.GetValue<int>("PageSizeLimit");
         }
@@ -32,7 +38,9 @@ namespace EduRural.API.Services
             pageSize = pageSize == 0 ? PAGE_ZISE : pageSize;
             int startIndex = (page - 1) * pageSize; // nos sirve para definir el indice inicial de la paginacion
 
-            IQueryable<ParentEntity> parentQuery = _context.Parents;
+            IQueryable<ParentEntity> parentQuery = _context.Parents
+            .Include(p => p.User)
+            .Include(p => p.Students);
 
             if (!string.IsNullOrEmpty(searchTerm)) //si el termino de busqueda es diferente a vacio o nulo
             {
@@ -50,6 +58,8 @@ namespace EduRural.API.Services
 
 
             var parentsDto = _mapper.Map<List<ParentDto>>(parentsEntity);
+
+           
 
             return new ResponseDto<PaginationDto<List<ParentDto>>>
             {
@@ -73,7 +83,10 @@ namespace EduRural.API.Services
 
         public async Task<ResponseDto<ParentDto>> GetOneByIdAsync(string id)
         {
-            var parent = await _context.Parents.FirstOrDefaultAsync(p => p.Id == id);
+            var parent = await _context.Parents
+                .Include(p => p.User)
+                .Include(p => p.Students)
+                .FirstOrDefaultAsync(p => p.Id == id);
 
             if (parent is null)
             {
@@ -81,7 +94,7 @@ namespace EduRural.API.Services
                 {
                     StatusCode = HttpStatusCode.NOT_FOUND,
                     Status = false,
-                    Message = "Grado no encontrado"
+                    Message = "Padre no encontrado"
                 };
             }
 
@@ -89,36 +102,135 @@ namespace EduRural.API.Services
             {
                 StatusCode = HttpStatusCode.OK,
                 Status = true,
-                Message = "Grado encontrado",
+                Message = "Padre encontrado",
                 Data = _mapper.Map<ParentDto>(parent)
             };
         }
 
         public async Task<ResponseDto<ParentActionResponseDto>> CreateAsync(ParentCreateDto dto)
         {
+            var user = await _userManager.FindByIdAsync(dto.UserId);
 
-            var parentEntity = _mapper.Map<ParentEntity>(dto); // automapper
+            if (user == null)
+            {
+                return new ResponseDto<ParentActionResponseDto>
+                {
+                    StatusCode = HttpStatusCode.NOT_FOUND,
+                    Status = false,
+                    Message = "El usuario no existe"
+                };
+            }
 
+            var roles = await _userManager.GetRolesAsync(user);
+
+            if (!roles.Contains(RolesConstant.PADRE))
+            {
+                return new ResponseDto<ParentActionResponseDto>
+                {
+                    StatusCode = HttpStatusCode.BAD_REQUEST,
+                    Status = false,
+                    Message = "El usuario no tiene el rol de padre"
+                };
+            }
+
+            // Validar que el alumno exista
+            var studentsCount = await _context.Students
+    .CountAsync(s => dto.StudentIds.Contains(s.Id));
+
+            if (studentsCount != dto.StudentIds.Count)
+            {
+                return new ResponseDto<ParentActionResponseDto>
+                {
+                    StatusCode = HttpStatusCode.NOT_FOUND,
+                    Status = false,
+                    Message = "Algunos alumnos relacionados no existen"
+                };
+            }
+
+            var existingParent = await _context.Parents
+                .FirstOrDefaultAsync(p => p.UserId == dto.UserId);
+
+            if (existingParent != null)
+            {
+                return new ResponseDto<ParentActionResponseDto>
+                {
+                    StatusCode = HttpStatusCode.CONFLICT,
+                    Status = false,
+                    Message = "Ya existe un padre asociado a ese usuario"
+                };
+            }
+
+           
+
+            // Obtener los estudiantes por sus IDs
+            var students = await _context.Students
+                .Where(s => dto.StudentIds.Contains(s.Id))
+                .ToListAsync();
+
+            // Verificar si alguno ya tiene padre asignado
+            var alreadyAssigned = students.Where(s => !string.IsNullOrEmpty(s.ParentId)).ToList();
+
+            if (alreadyAssigned.Any())
+            {
+                var nombres = string.Join(", ", alreadyAssigned.Select(s => s.FullName));
+
+                return new ResponseDto<ParentActionResponseDto>
+                {
+                    StatusCode = HttpStatusCode.BAD_REQUEST,
+                    Status = false,
+                    Message = $"Los siguientes estudiantes ya están asociados a un padre: {nombres}"
+                };
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+
+            var parentEntity = _mapper.Map<ParentEntity>(dto);
             parentEntity.Id = Guid.NewGuid().ToString();
 
-            _context.Parents.Add(parentEntity); // agregar esto en memoria de nuestro proyecto
+            parentEntity.Students = students;
 
-            await _context.SaveChangesAsync(); // guardar los cambios
+            _context.Parents.Add(parentEntity);
+            await _context.SaveChangesAsync();
 
-            return new ResponseDto<ParentActionResponseDto>
+            var parentWithDetails = await _context.Parents
+            .Include(p => p.User)
+            .Include(p => p.Students)
+            .FirstOrDefaultAsync(p => p.Id == parentEntity.Id);
+
+
+             // Confirmar transacción
+             await transaction.CommitAsync();
+
+                return new ResponseDto<ParentActionResponseDto>
             {
                 StatusCode = HttpStatusCode.CREATED,
                 Status = true,
-                Message = "Registro creado Correctamente",
-                Data = _mapper.Map<ParentActionResponseDto>(parentEntity) //:: :: Automapper 
+                Message = "Registro creado correctamente",
+                Data = _mapper.Map<ParentActionResponseDto>(parentWithDetails)
             };
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+
+                return new ResponseDto<ParentActionResponseDto>
+                {
+                    StatusCode = HttpStatusCode.INTERNAL_SERVER_ERROR,
+                    Status = false,
+                    Message = "Error interno en el servidor"
+                };
+            }
         }
+
 
         public async Task<ResponseDto<ParentActionResponseDto>> EditAsync(ParentEditDto dto, string id)
         {
-            var parentEntity = await _context.Parents.FindAsync(id); // ver si existe el registro
+            var parentEntity = await _context.Parents
+                .Include(p => p.Students)
+                .FirstOrDefaultAsync(p => p.Id == id); 
 
-            // si no existe
             if (parentEntity is null)
             {
                 return new ResponseDto<ParentActionResponseDto>
@@ -129,25 +241,89 @@ namespace EduRural.API.Services
                 };
             }
 
-            //Si se encuentra el registro
-            _mapper.Map<ParentEditDto, ParentEntity>(dto, parentEntity); //:: :: Automapper
+            // Validar si existen los estudiantes enviados
+            var students = await _context.Students
+                .Where(s => dto.StudentIds.Contains(s.Id))
+                .ToListAsync();
 
-            _context.Parents.Update(parentEntity); // guardar en memoria
-            await _context.SaveChangesAsync(); // guardar los cambios
+            if (students.Count != dto.StudentIds.Count)
+            {
+                return new ResponseDto<ParentActionResponseDto>
+                {
+                    StatusCode = HttpStatusCode.BAD_REQUEST,
+                    Status = false,
+                    Message = "Uno o más estudiantes no existen"
+                };
+            }
+
+            // Validar si ya están asignados a otro padre
+            var alreadyAssigned = await _context.Students
+                .Where(s => dto.StudentIds.Contains(s.Id) && s.ParentId != null && s.ParentId != parentEntity.Id)
+                .ToListAsync();
+
+            if (alreadyAssigned.Any())
+            {
+                var nombres = string.Join(", ", alreadyAssigned.Select(s => s.FullName));
+
+                return new ResponseDto<ParentActionResponseDto>
+                {
+                    StatusCode = HttpStatusCode.BAD_REQUEST,
+                    Status = false,
+                    Message = $"Los siguientes estudiantes ya están asociados a otro padre: {nombres}"
+                };
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+
+                // Mapear propiedades del padre
+                _mapper.Map(dto, parentEntity);
+
+            // Actualizar la relación con estudiantes
+            parentEntity.Students = students;
+
+            _context.Parents.Update(parentEntity);
+            await _context.SaveChangesAsync();
+
+            var parentWithDetails = await _context.Parents
+            .Include(p => p.User)
+            .Include(p => p.Students)
+            .FirstOrDefaultAsync(p => p.Id == parentEntity.Id);
+            
+            // Confirmar transacción
+             await transaction.CommitAsync();
 
             return new ResponseDto<ParentActionResponseDto>
             {
                 StatusCode = HttpStatusCode.OK,
                 Status = true,
                 Message = "Registro modificado correctamente",
-                Data = _mapper.Map<ParentActionResponseDto>(parentEntity)  // :: :: Automapper
+                Data = _mapper.Map<ParentActionResponseDto>(parentEntity)
             };
 
         }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+
+                return new ResponseDto<ParentActionResponseDto>
+                {
+                    StatusCode = HttpStatusCode.INTERNAL_SERVER_ERROR,
+                    Status = false,
+                    Message = "Error interno en el servidor"
+                };
+            }
+        }
+
 
         public async Task<ResponseDto<ParentActionResponseDto>> DeleteAsync(string id)
         {
-            var parentEntity = await _context.Parents.FindAsync(id); // ver si existe el registro
+            var parentEntity = await _context.Parents
+                .Include(p => p.User) 
+                .Include(p => p.Students)
+                .FirstOrDefaultAsync(p => p.Id == id); // ver si existe el registro
+
 
             if (parentEntity is null)
             {
@@ -159,28 +335,47 @@ namespace EduRural.API.Services
                 };
             }
 
-            //var gradetInGuide = await _context.Guides.CountAsync(p => p.GradeId == id); // ver si la materia existe en una guia
+            var hasStudent = await _context.Students.AnyAsync(s => s.ParentId == id);
 
-            //if (gradetInGuide > 0)
-            //{
-            //    return new ResponseDto<GradeActionResponseDto>
-            //    {
-            //        StatusCode = HttpStatusCode.BAD_REQUEST,
-            //        Status = false,
-            //        Message = "El grado tiene datos relaionados"
-            //    };
-            //}
+            if (hasStudent)
+            {
+                return new ResponseDto<ParentActionResponseDto>
+                {
+                    StatusCode = HttpStatusCode.BAD_REQUEST,
+                    Status = false,
+                    Message = "No se puede eliminar el padre porque tiene estudiantes asociados"
+                };
+            }
 
-            _context.Parents.Remove(parentEntity); // borrar el registro
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+
+                _context.Parents.Remove(parentEntity); // borrar el registro
             await _context.SaveChangesAsync(); // guardar los cambios
 
-            return new ResponseDto<ParentActionResponseDto>
+                // Confirmar transacción
+                await transaction.CommitAsync();
+
+                return new ResponseDto<ParentActionResponseDto>
             {
                 StatusCode = HttpStatusCode.OK,
                 Status = true,
                 Message = "Registro borrado correctamente",
                 Data = _mapper.Map<ParentActionResponseDto>(parentEntity)
             };
+        }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+
+                return new ResponseDto<ParentActionResponseDto>
+                {
+                    StatusCode = HttpStatusCode.INTERNAL_SERVER_ERROR,
+                    Status = false,
+                    Message = "Error interno en el servidor"
+                };
+}
         }
     }
 }

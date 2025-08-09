@@ -13,7 +13,7 @@ namespace EduRural.API.Dtos.Students
         public string GradeName { get; set; }
 
         // Lista de materias asociadas
-        public List<SubjectDto> SubjectsIds { get; set; }
+        public List<string> SubjectsIds { get; set; }
     }
 
 }

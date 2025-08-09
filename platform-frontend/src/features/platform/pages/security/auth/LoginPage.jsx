@@ -8,15 +8,19 @@ import {
   MDBCheckbox,
   MDBIcon
 } from 'mdb-react-ui-kit';
+//import authEduRuralApi from '../api/authEduRuralApi'; // Asegúrate que la ruta sea correcta
 import { authEduRuralApi } from '../../../../../core/api/auth.edurural.api';
 import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../../../../stores/authStore';
 
 function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
+  const login = useAuthStore((state) => state.login);
 
-  const handleLogin = async () => {
+
+  /*const handleLogin = async () => {
     try {
       const response = await authEduRuralApi.post('/auth/login', {
         email,
@@ -27,12 +31,22 @@ function LoginPage() {
       localStorage.setItem('token', token);
       console.log('Login exitoso');
 
-      navigate('/dashboard'); // o cualquier página protegida que tengas
+      navigate('/dashboard'); // o cualquier página protegida que tengas 
     } catch (error) {
       console.error('Error en login:', error.response?.data || error.message);
       alert('Credenciales inválidas');
     }
-  };
+  };*/
+  const handleLogin = async () => {
+  const response = await login({ email, password });
+
+  if (useAuthStore.getState().authenticated) {
+    console.log('Login exitoso');
+    navigate('/home'); // O a donde quieras redirigir
+  } else {
+    alert(response?.message || 'Error al iniciar sesión');
+  }
+};
 
   return (
     <>

@@ -1,39 +1,54 @@
+/* Fuentes y reset básico */
 * {
   font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  margin: 0;
   color: #fff;
   background-color: #fcfcfc;
   min-height: 100vh;
-  /* Quitamos display:flex para que no centre el contenido */
+  width: 100vw;
+  overflow-x: hidden; /* evita scroll horizontal */
 }
 
-.app {
-  width: 100vw;             /* Ocupa todo el ancho de la ventana */
-  max-width: 100vw;         /* Máximo igual a ancho ventana */
-  min-width: 0;
-  height: auto;
-  background-color: #5065b3;
-  border-radius: 15px;
-  padding: 20px;
-  box-sizing: border-box;  /* Padding no aumenta ancho */
-  box-shadow: 10px 10px 42px 0px rgba(0, 0, 0, 0.75);
-  
+/* Contenedor principal para el quiz: ocupa toda la pantalla */
+.contenedor-quiz {
+  width: 100vw;
+  min-height: 100vh;
+  padding: 1rem;
+  background-color: #fcfcfc;
   display: flex;
-  flex-direction: column;  /* Para que los hijos estén en columna */
-  align-items: center;     /* Centra horizontalmente el contenido */
-  justify-content: flex-start;
+  flex-direction: column;
+  align-items: center;
 }
 
-/* PREGUNTAS */
+/* Contenido principal, la "app", ahora ocupa todo el ancho */
+.app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+
+  width: 100%;        /* ocupa todo el ancho */
+  max-width: 100%;    /* sin limite máximo */
+  padding: 20px;
+  box-sizing: border-box;
+
+  background-color: #0e257a;
+  border-radius: 15px;
+  box-shadow: 10px 10px 42px 0px rgba(0, 0, 0, 0.75);
+}
+
+/* Estilos para lado izquierdo y derecho */
 .lado-izquierdo {
   width: 100%;
-  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: space-around;
+  position: relative;
 }
 
 .pregunta-numero {
@@ -57,7 +72,7 @@ body {
   justify-content: space-between;
 }
 
-/* FINALIZADO */
+/* Texto y botones del juego terminado */
 .juego-terminado {
   display: flex;
   flex-direction: column;
@@ -67,7 +82,13 @@ body {
   text-align: center;
 }
 
-/* GRAL */
+.resultado-texto {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+/* Botones principales */
 button {
   width: 100%;
   font-size: 16px;
@@ -76,16 +97,21 @@ button {
   border-radius: 15px;
   display: flex;
   padding: 5px;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
   border: 5px solid #6f9cc9;
   cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
-.tiempo-restante {
-  font-size: 14px;
-  color: #f7bb3a;
-  margin-bottom: 20px;
+.btn-juego:hover {
+  background-color: #0f2b47;
+}
+
+button[disabled] {
+  background-color: #555e7d;
+  color: #ffffff;
+  cursor: not-allowed;
 }
 
 .correct,
@@ -98,32 +124,16 @@ button {
   background-color: #ff3333;
 }
 
-.btns-container {
-  display: flex;
-  justify-content: space-evenly;
-}
-
-button:hover {
-  background-color: #0f2b47;
-}
-
-button[disabled] {
-  background-color: #555e7d;
-  color: #ffffff;
-  cursor: not-allowed;
-}
-
-button:focus {
-  outline: none;
-}
-
-button svg {
-  margin-right: 5px;
+/* Temporizador */
+.tiempo-restante {
+  font-size: 14px;
+  color: #f7bb3a;
+  margin-bottom: 20px;
 }
 
 /* Lectura */
 .lectura {
-  max-width: 900px;
+  color: white;
   width: 100%;
   margin-bottom: 2rem;
   text-align: justify;
@@ -132,4 +142,162 @@ button svg {
 .lectura h1 {
   text-align: center;
   margin-bottom: 1rem;
+}
+
+/* Títulos */
+.titulo-separador {
+  color: #ffae00;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.titulo-separador2 {
+  color: #ffae00;
+  margin-bottom: 1rem;
+}
+
+.titulo-pregunta {
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+/* Paginación */
+.paginacion {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 900px;
+  margin: 1rem auto 3rem auto;
+  padding: 0.5rem 1rem;
+  box-sizing: border-box;
+}
+
+.btn-paginacion {
+  min-width: 50px;
+  padding: 6px 12px;
+  background-color: #2a386b;
+  color: white;
+  border-radius: 12px;
+  border: 3px solid #6f9cc9;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-paginacion:hover:not(:disabled) {
+  background-color: #0f2b47;
+}
+
+.btn-paginacion:disabled {
+  background-color: #555e7d;
+  cursor: not-allowed;
+  color: #ccc;
+}
+
+.btn-paginacion.activo {
+  background-color: #f7bb3a;
+  color: #0e257a;
+  border-color: #f7bb3a;
+  cursor: default;
+  font-weight: 700;
+}
+
+/* Otros botones */
+
+.check-btn {
+  all: unset;
+  cursor: pointer;
+  font-size: 1.5rem;
+  width: auto;
+  height: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  background: transparent;
+  border: none;
+}
+
+/* Botones generales */
+.btn-sm {
+  font-size: 0.9rem;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Botón Agregar / Guardar */
+.btn-agregar {
+  background-color: #22c55e;
+  color: white;
+}
+
+.btn-agregar:hover {
+  background-color: #16a34a;
+}
+
+/* Botón Cancelar */
+.btn-cancelar {
+  background-color: #ef4444;
+  color: white;
+}
+
+.btn-cancelar:hover {
+  background-color: #dc2626;
+}
+
+/* Botón Editar */
+.btn-editar {
+  background-color: #061f47;
+  color: white;
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  border-radius: 10px;
+}
+
+.btn-editar:hover {
+  background-color: #2563eb;
+}
+
+/* Botón Eliminar */
+.btn-eliminar {
+  background-color: #d4691c;
+  color: white;
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  border-radius: 10px;
+}
+
+.btn-eliminar:hover {
+  background-color: #4e1c01;
+}
+
+/* Media queries para mejorar responsividad en móviles */
+@media (max-width: 600px) {
+  .app {
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 5px 5px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  button {
+    font-size: 14px;
+    padding: 10px 5px;
+  }
+
+  .titulo-pregunta {
+    font-size: 1.2rem;
+  }
+
+  .tiempo-restante {
+    font-size: 12px;
+  }
 }

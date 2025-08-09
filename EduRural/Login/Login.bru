@@ -16,3 +16,9 @@ body:json {
     "password": "ConTra1!"
   }
 }
+
+script:post-response {
+  let response = res.getBody()
+  bru.setEnvVar("TOKEN", response.data?.token ?? '')
+  bru.setEnvVar("REFRESH_TOKEN", response.data?.refreshToken ?? '')
+}

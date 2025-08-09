@@ -6,6 +6,9 @@ export default {
   ],
   theme: {
     extend: {
+      screens: {
+        custom: "800px",
+      },
       backgroundImage:{
         "hero-pattern":"url('/fondo.png')",
       },

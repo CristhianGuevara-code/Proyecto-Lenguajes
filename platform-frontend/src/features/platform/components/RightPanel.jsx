@@ -1,4 +1,16 @@
+import { useEffect, useState } from "react";
+
 export const RightPanel = () => {
+  const [asignaturas, setAsignaturas] = useState([]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("asignaturas");
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      setAsignaturas(parsed);
+    }
+  }, []);
+
   return (
     <div className="hidden w-4/12 lg:block">
       {/*Inicio Sección de Profesor*/}
@@ -25,55 +37,37 @@ export const RightPanel = () => {
                 <span className="text-gray-500">Cel: 9876-1234</span>
               </div>
             </li>
-
           </ul>
         </div>
-
       </div>
       {/*Fin Sesión de Profesor */}
+
       {/*Inicio Sección de Categorías */}
       <div className="px-8 mt-10">
-        <h2 className="mb-4 text-2xl text-platform-darkblue font-bold text-gray-600">Mis asignaturas:</h2>
+        <h2 className="mb-4 text-2xl text-platform-darkblue font-bold text-gray-600">
+          Mis asignaturas:
+        </h2>
+
         <div className="flex flex-col text-lg max-w-sm p-4 mx-auto bg-platform-brightblue rounded-md">
           <ul>
-            <li className="mb-2">
-              <a className="mx-1 font-bold text-platform-darkblue hover:text-platform-strawberrypink hover:underline"
-                href="#">Español</a>
-            </li>
-            <li className="mb-2">
-              <a className="mx-1 font-bold text-platform-darkblue hover:text-platform-strawberrypink hover:underline"
-                href="#">Matematicas</a>
-            </li>
-            <li className="mb-2">
-              <a className="mx-1 font-bold text-platform-darkblue hover:text-platform-strawberrypink hover:underline"
-                href="#">Ciencias Naturales</a>
-            </li>
-            <li className="mb-2">
-              <a className="mx-1 font-bold text-platform-darkblue hover:text-platform-strawberrypink hover:underline"
-                href="#">Estudios Sociales</a>
-            </li>
-            <li className="mb-2">
-              <a className="mx-1 font-bold text-platform-darkblue hover:text-platform-strawberrypink hover:underline"
-                href="#">Educacion Artistica</a>
-            </li>
-            <li className="mb-2">
-              <a className="mx-1 font-bold text-platform-darkblue hover:text-platform-strawberrypink hover:underline"
-                href="#">Musica</a>
-            </li>
-            <li className="mb-2">
-              <a className="mx-1 font-bold text-platform-darkblue hover:text-platform-strawberrypink hover:underline"
-                href="#">Educacion Fisica</a>
-            </li>
-            <li className="mb-2">
-              <a className="mx-1 font-bold text-platform-darkblue hover:text-platform-strawberrypink hover:underline"
-                href="#">Tecnologia</a>
-            </li>
+            {asignaturas.length === 0 ? (
+              <li className="text-gray-500 italic">No hay asignaturas registradas.</li>
+            ) : (
+              asignaturas.map((asig) => (
+                <li key={asig.id} className="mb-2">
+                  <a
+                    className="mx-1 font-bold text-platform-darkblue hover:text-platform-strawberrypink hover:underline"
+                    href="#"
+                  >
+                    {asig.titulo}
+                  </a>
+                </li>
+              ))
+            )}
           </ul>
         </div>
-
-
       </div>
       {/*Fin sección de categorías */}
     </div>
-  )
-}
+  );
+};

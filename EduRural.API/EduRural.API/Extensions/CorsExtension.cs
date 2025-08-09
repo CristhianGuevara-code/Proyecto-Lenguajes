@@ -1,5 +1,6 @@
 ﻿namespace EduRural.API.Extensions
 {
+    // CorsExtension.cs
     public static class CorsExtension
     {
         public static IServiceCollection AddCorsConfiguration(
@@ -8,22 +9,42 @@
         {
             services.AddCors(opt =>
             {
-                var allowURLS = configuration.GetSection("AllowURLs").Get<string[]>();
+                var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 
-                if (allowURLS == null)
+                opt.AddPolicy("CorsPolicy", builder =>
                 {
-                    allowURLS = [""];
-                }
-
-                opt.AddPolicy("CorsPolicy", builder => builder
-                .WithOrigins(allowURLS)
-                .AllowAnyMethod()
-                .AllowAnyHeader()
-                .AllowCredentials());
+                    if (env == "Development")
+                    {
+                        // Acepta cualquier puerto de localhost/127.0.0.1 en DEV
+                        builder
+                            .SetIsOriginAllowed(origin =>
+                            {
+                                try
+                                {
+                                    var u = new Uri(origin);
+                                    return u.Host == "localhost" || u.Host == "127.0.0.1";
+                                }
+                                catch { return false; }
+                            })
+                            .AllowAnyHeader()
+                            .AllowAnyMethod()
+                            .AllowCredentials();
+                    }
+                    else
+                    {
+                        var allowURLs = configuration.GetSection("AllowURLs").Get<string[]>() ?? Array.Empty<string>();
+                        builder
+                            .WithOrigins(allowURLs)
+                            .AllowAnyHeader()
+                            .AllowAnyMethod()
+                            .AllowCredentials();
+                    }
+                });
             });
 
             return services;
         }
     }
 }
+
 

@@ -1,5 +1,9 @@
 export * from './PlatformPage';
-export * from './HomePage';
-export * from './QuizPage';
+export * from './SubjectPage';
+export { default as QuizPage } from "./QuizPage";
 export * from './ForumPage';
-export * from './GradesPage';
+export { ParentPage } from './ParentPage';
+export { default as TeacherPage } from './TeacherHome';
+export * from './AssignmentsPage';
+export * from './GuidesPage';
+export { StudentPage } from './StudentPage';

@@ -7,6 +7,7 @@ using Persons.API.Dtos.Common;
 using EduRural.API.Services.Interfaces;
 using EduRural.API.Dtos.Students;
 using Persons.API.Constants;
+using EduRural.API.Dtos.Parents;
 
 namespace EduRural.API.Services
 {
@@ -95,10 +96,43 @@ namespace EduRural.API.Services
 
         public async Task<ResponseDto<StudentActionResponseDto>> CreateAsync(StudentCreateDto dto)
         {
+            // Validar existencia del grado
+            var gradeExists = await _context.Grades.AnyAsync(g => g.Id == dto.GradeId);
+            if (!gradeExists)
+            {
+                return new ResponseDto<StudentActionResponseDto>
+                {
+                    StatusCode = HttpStatusCode.BAD_REQUEST,
+                    Status = false,
+                    Message = "El grado no existe"
+                };
+            }
+
+            // Validar existencia de materias
+            if (dto.SubjectIds != null && dto.SubjectIds.Any())
+            {
+                var subjectCount = await _context.Subjects
+                    .CountAsync(s => dto.SubjectIds.Contains(s.Id));
+
+                if (subjectCount != dto.SubjectIds.Count)
+                {
+                    return new ResponseDto<StudentActionResponseDto>
+                    {
+                        StatusCode = HttpStatusCode.BAD_REQUEST,
+                        Status = false,
+                        Message = "Una o más materias no existen"
+                    };
+                }
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+
             var studentEntity = _mapper.Map<StudentEntity>(dto);
             studentEntity.Id = Guid.NewGuid().ToString();
 
-            // Asignar relaciones StudentSubjects según dto.SubjectIds (tienes que agregar SubjectIds en dto)
+            // Asignar relaciones StudentSubjects según dto.SubjectIds
             if (dto.SubjectIds != null && dto.SubjectIds.Any())
             {
                 studentEntity.StudentSubjects = new List<StudentSubjectEntity>();
@@ -118,17 +152,33 @@ namespace EduRural.API.Services
             await _context.SaveChangesAsync();
 
             var studentWithIncludes = await _context.Students
+                .Include(s => s.Grade)
                 .Include(s => s.StudentSubjects)
                 .ThenInclude(ss => ss.Subject)
                 .FirstOrDefaultAsync(s => s.Id == studentEntity.Id);
 
-            return new ResponseDto<StudentActionResponseDto>
+                // Confirmar transacción
+                await transaction.CommitAsync();
+
+                return new ResponseDto<StudentActionResponseDto>
             {
                 StatusCode = HttpStatusCode.CREATED,
                 Status = true,
                 Message = "Registro creado correctamente",
                 Data = _mapper.Map<StudentActionResponseDto>(studentWithIncludes)
             };
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+
+                return new ResponseDto<StudentActionResponseDto>
+                {
+                    StatusCode = HttpStatusCode.INTERNAL_SERVER_ERROR,
+                    Status = false,
+                    Message = "Error interno en el servidor"
+                };
+            }
         }
 
         public async Task<ResponseDto<StudentActionResponseDto>> EditAsync(StudentEditDto dto, string id)
@@ -146,6 +196,42 @@ namespace EduRural.API.Services
                     Message = "Registro no encontrado"
                 };
             }
+
+            // Validar que el grado exista
+            var gradeExists = await _context.Grades.AnyAsync(g => g.Id == dto.GradeId);
+            if (!gradeExists)
+            {
+                return new ResponseDto<StudentActionResponseDto>
+                {
+                    StatusCode = HttpStatusCode.BAD_REQUEST,
+                    Status = false,
+                    Message = "El grado proporcionado no existe"
+                };
+            }
+
+            // Validar que los subjectIds existan
+            if (dto.SubjectIds != null && dto.SubjectIds.Any())
+            {
+                var validSubjectIds = await _context.Subjects
+                    .Select(s => s.Id)
+                    .ToListAsync();
+
+                var invalidSubjects = dto.SubjectIds.Except(validSubjectIds).ToList();
+
+                if (invalidSubjects.Any())
+                {
+                    return new ResponseDto<StudentActionResponseDto>
+                    {
+                        StatusCode = HttpStatusCode.BAD_REQUEST,
+                        Status = false,
+                        Message = $"Estas materias no existen: {string.Join(", ", invalidSubjects)}"
+                    };
+                }
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
 
             _mapper.Map(dto, studentEntity);
 
@@ -171,22 +257,40 @@ namespace EduRural.API.Services
             await _context.SaveChangesAsync();
 
             var studentWithIncludes = await _context.Students
+                .Include(s => s.Grade)
                 .Include(s => s.StudentSubjects)
                 .ThenInclude(ss => ss.Subject)
                 .FirstOrDefaultAsync(s => s.Id == studentEntity.Id);
 
-            return new ResponseDto<StudentActionResponseDto>
+             // Confirmar transacción
+             await transaction.CommitAsync();
+
+                return new ResponseDto<StudentActionResponseDto>
             {
                 StatusCode = HttpStatusCode.OK,
                 Status = true,
                 Message = "Registro modificado correctamente",
                 Data = _mapper.Map<StudentActionResponseDto>(studentWithIncludes)
             };
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+
+                return new ResponseDto<StudentActionResponseDto>
+                {
+                    StatusCode = HttpStatusCode.INTERNAL_SERVER_ERROR,
+                    Status = false,
+                    Message = "Error interno en el servidor"
+                };
+            }
         }
 
         public async Task<ResponseDto<StudentActionResponseDto>> DeleteAsync(string id)
         {
-            var studentEntity = await _context.Students.FindAsync(id);
+            var studentEntity = await _context.Students
+                .Include(s => s.Parent) 
+                .FirstOrDefaultAsync(s => s.Id == id);
 
             if (studentEntity is null)
             {
@@ -198,16 +302,59 @@ namespace EduRural.API.Services
                 };
             }
 
-            _context.Students.Remove(studentEntity);
+            // Verificar si es el único estudiante del padre
+            if (!string.IsNullOrEmpty(studentEntity.ParentId))
+            {
+                var count = await _context.Students
+                    .CountAsync(s => s.ParentId == studentEntity.ParentId);
+
+                if (count == 1)
+                {
+                    return new ResponseDto<StudentActionResponseDto>
+                    {
+                        StatusCode = HttpStatusCode.BAD_REQUEST,
+                        Status = false,
+                        Message = "No se puede eliminar, porque el padre quedaría sin estudiantes relacionados"
+                    };
+                }
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+
+                _context.Students.Remove(studentEntity);
             await _context.SaveChangesAsync();
+
+            var studentWithIncludes = await _context.Students
+                .Include(s => s.Grade)
+                .Include(s => s.StudentSubjects)
+                .ThenInclude(ss => ss.Subject)
+                .FirstOrDefaultAsync(s => s.Id == studentEntity.Id);
+
+            // Confirmar transacción
+            await transaction.CommitAsync();
 
             return new ResponseDto<StudentActionResponseDto>
             {
                 StatusCode = HttpStatusCode.OK,
                 Status = true,
                 Message = "Registro borrado correctamente",
-                Data = _mapper.Map<StudentActionResponseDto>(studentEntity)
+                Data = _mapper.Map<StudentActionResponseDto>(studentWithIncludes)
             };
         }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+
+                return new ResponseDto<StudentActionResponseDto>
+                {
+                    StatusCode = HttpStatusCode.INTERNAL_SERVER_ERROR,
+                    Status = false,
+                    Message = "Error interno en el servidor"
+                };
+}
+        }
+
     }
 }
