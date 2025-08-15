@@ -23,8 +23,8 @@ export const getEligibleUsersAction = async (
   role?: "PADRE" | "PROFESOR"
 ): Promise<EligibleUsersPage> => {
 
-  console.log('--- LLAMANDO A LA API DE USUARIOS ELIGIBLES ---');
-  console.log('Parámetros enviados a la API:', { page, pageSize, searchTerm, role });
+  //console.log('Usuaros Elegibles');
+  //console.log('Parámetros enviados a la API:', { page, pageSize, searchTerm, role });
 
   // Llamada a la API
   const { data } = await eduRuralApi.get<{
@@ -35,16 +35,16 @@ export const getEligibleUsersAction = async (
     params: { page, pageSize, searchTerm, role },
   });
 
-  console.log('--- RESPUESTA COMPLETA DE LA API ---');
-  console.log(data);
+  //console.log('Respuesta de la api');
+  //console.log(data);
 
   // Revisamos qué trae 'items' antes de filtrar
-  console.log('Usuarios recibidos directamente desde la API antes del filtro:', data.data.items);
+  //console.log('Usuarios recibidos directamente desde la API antes del filtro:', data.data.items);
 
   // Filtramos solo usuarios que tengan el rol solicitado
   const filteredItems = data.data.items.filter(user => role ? user.roles.includes(role) : true);
 
-  console.log('Usuarios filtrados que llegarán al combobox:', filteredItems);
+  //console.log('Usuarios filtrados que llegarán al combobox:', filteredItems);
 
   // Retornamos la data final
   return {

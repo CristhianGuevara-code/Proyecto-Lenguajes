@@ -17,6 +17,7 @@ namespace EduRural.API.Services
         private readonly EduRuralDbContext _context;
         private readonly IMapper _mapper;
         private readonly IAuditService _auditService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IWebHostEnvironment _env;
 
         private readonly int PAGE_ZISE;        
@@ -32,11 +33,13 @@ namespace EduRural.API.Services
             IMapper mapper,
             IConfiguration configuration,
             IAuditService auditService,
+            IHttpContextAccessor httpContextAccessor,
             IWebHostEnvironment env)
         {
             _context = context;
             _mapper = mapper;
             _auditService = auditService;
+            _httpContextAccessor = httpContextAccessor;
             _env = env;
 
             PAGE_ZISE = configuration.GetValue<int>("PageSize");

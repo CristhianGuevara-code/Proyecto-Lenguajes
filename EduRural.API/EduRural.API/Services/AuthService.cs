@@ -180,8 +180,10 @@ namespace Persons.API.Services
 
         private async Task<List<Claim>> GetClaims(UserEntity userEntity)
         {
+
             var authClaims = new List<Claim>
             {
+                new Claim(ClaimTypes.NameIdentifier, userEntity.Id),
                 new Claim(ClaimTypes.Email, userEntity.Email),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim("UserId", userEntity.Id),

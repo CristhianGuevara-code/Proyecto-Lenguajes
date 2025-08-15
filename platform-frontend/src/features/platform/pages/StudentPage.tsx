@@ -294,7 +294,7 @@ export function StudentPage() {
             onClick={() => setPage(Math.max(1, cur - 1))}
             disabled={cur <= 1 || studentsPaginationQuery.isFetching}
           >
-            ← Anterior
+            &larr; Anterior
           </button>
           <span className="text-sm text-gray-600">Página {cur} de {totalPages}</span>
           <button
@@ -302,7 +302,7 @@ export function StudentPage() {
             onClick={() => setPage(cur + 1)}
             disabled={cur >= totalPages || studentsPaginationQuery.isFetching}
           >
-            Siguiente →
+            &rarr; Siguiente
           </button>
         </div>
       </div>

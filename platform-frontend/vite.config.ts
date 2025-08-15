@@ -35,18 +35,7 @@ export default defineConfig({
               cacheableResponse: { statuses: [200] },
             },
           },
-         /*  {
-            // Descargas de guías
-            urlPattern: ({ url }) =>
-              url.pathname.startsWith('/api/guides/') &&
-              url.pathname.endsWith('/download'),
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'guides-downloads',
-              expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 * 30 },
-              cacheableResponse: { statuses: [200] },
-            },
-          }, */
+
           {
             // Archivos estáticos de guías
             urlPattern: ({ url }) => url.pathname.startsWith('/uploads/guides/'),

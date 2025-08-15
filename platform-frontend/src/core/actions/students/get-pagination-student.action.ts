@@ -17,10 +17,10 @@ Promise<ApiResponse<PageResponse<StudentResponse>>> => {
             }
         });
 
-        // Filtramos para que solo aparezcan los estudiantes que no tienen padre asignado
+        // Filtro para que solo aparezcan los estudiantes que no tienen padre asignado
         const students = (data?.data?.items ?? []).filter(student => !student.parentId);
 
-        // Construimos el objeto con valores predeterminados para las propiedades opcionales
+        // objeto con valores predeterminados para las propiedades opcionales
         const response: PageResponse<StudentResponse> = {
             items: students,
             currentPage: data?.data?.currentPage ?? 1,  // Valor predeterminado: 1
@@ -32,7 +32,7 @@ Promise<ApiResponse<PageResponse<StudentResponse>>> => {
         };
 
         return {
-            ...data, // Incluimos toda la respuesta original
+            ...data, 
             data: response
         };
 

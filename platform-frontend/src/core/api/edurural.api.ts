@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useAuthStore } from '../../features/stores/authStore';
 import { refreshTokenAction } from '../actions/security/auth/refresh-token.action';
 
-// '/api' para que pase por el proxy de Vite (mismo origen)
+// '/api' para que pase por el proxy de Vite
 export const eduRuralApi = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '/api',
 });

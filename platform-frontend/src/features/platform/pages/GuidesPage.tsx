@@ -138,14 +138,14 @@ export default function GuidesPage() {
   const isAdmin = roles?.includes(Role.ADMIN);
   const canManage = isTeacher || isAdmin;
 
-  const [guides, setGuides] = useState<any[]>([]); // tu lista de guías
+  const [guides, setGuides] = useState<any[]>([]); // lista de guías
   const [preview, setPreview] = useState<{ id: string; title: string } | null>(null);
   const [selectedGuide, setSelectedGuide] = useState<any | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
 
-   // Función para recargar guías desde tu API
+   // Función para recargar guías desde la API
   /*const refreshGuides = async () => {
-    const res = await fetch("/api/guides"); // reemplazá por tu endpoint real
+    const res = await fetch("/api/guides"); 
     const data = await res.json();
     setGuides(data);
   };*/
@@ -180,24 +180,7 @@ export default function GuidesPage() {
     setPage(1);
   }, [queryText, setSearchTerm, setPage]);
 
-  // modal preview
-  
 
-  // (Opcional) si ya tienes crear/editar:
-//  const openCreate = () => {
-    // abre tu modal de crear guía
-    // ...
-//  };
-//  const openEdit = (g: GuideRow) => {
-    // tu lógica existente para editar
-    // ...
-//  };
-//  const onDelete = async (id: string) => {
-    // tu lógica existente para eliminar
-    // ...
-    // al terminar:
-    // refreshGuides();
-//  };
 
 useEffect(() => {
     async function loadOptions() {
@@ -416,7 +399,7 @@ const handleCreate = () => {
             onClick={() => setPage(Math.max(1, (dataset?.currentPage ?? 1) - 1))}
             disabled={(dataset?.currentPage ?? 1) <= 1 || guidesPaginationQuery.isFetching}
           >
-            ← Anterior
+            &larr; Anterior
           </button>
           <span className="text-sm text-gray-600">Página {cur} de {totalPages}</span>
           <button
@@ -425,7 +408,7 @@ const handleCreate = () => {
             onClick={() => setPage((dataset?.currentPage ?? 1) + 1)}
             disabled={(dataset?.currentPage ?? 1) >= totalPages || guidesPaginationQuery.isFetching}
           >
-            Siguiente →
+            &rarr; Siguiente
           </button>
         </div>
       </div>

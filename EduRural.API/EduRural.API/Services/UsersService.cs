@@ -104,7 +104,7 @@ namespace EduRural.API.Services
 
             // Obtener los roles del usuario desde el UserManager
             var roles = await _userManager.GetRolesAsync(user);
-            userDto.Roles = roles.ToList(); // Asegúrate que UserDto tenga una propiedad List<string> Roles
+            userDto.Roles = roles.ToList(); 
 
             return new ResponseDto<UserDto>
             {

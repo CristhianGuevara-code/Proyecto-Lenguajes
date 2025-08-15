@@ -11,7 +11,7 @@ export const downloadGuideAction = async (guideId: string, fileName: string) => 
   // Crear enlace y disparar click
   const link = document.createElement("a");
   link.href = url;
-  link.setAttribute("download", fileName); // Nombre sugerido
+  link.setAttribute("download", fileName); 
   document.body.appendChild(link);
   link.click();
 

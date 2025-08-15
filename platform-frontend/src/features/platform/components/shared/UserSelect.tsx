@@ -51,7 +51,7 @@ export const UserSelect = ({ value, onChange, label = "Usuario", helperText }: P
         })}
       </div>
 
-      {/* paginación simple */}
+      {/* paginación */}
       <div className="flex items-center justify-between mt-2">
         <button
           type="button"

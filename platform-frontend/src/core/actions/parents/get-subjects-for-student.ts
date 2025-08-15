@@ -1,4 +1,3 @@
-// Define el tipo para los elementos de "allSubjects"
 interface Subject {
   id: string;
   name: string;
@@ -6,7 +5,7 @@ interface Subject {
 
 export const getSubjectsForStudent = async (studentId: string) => {
   try {
-    // Llama a tu API para obtener las asignaturas del estudiante
+    // Llama a la API para obtener las asignaturas del estudiante
     const response = await fetch(`/api/students/${studentId}/subjects`);
     const studentData = await response.json();
 
@@ -14,15 +13,15 @@ export const getSubjectsForStudent = async (studentId: string) => {
       throw new Error("Error al obtener las asignaturas del estudiante.");
     }
 
-    // Ahora obtén la lista de todas las asignaturas disponibles
-    const subjectsResponse = await fetch("/api/subjects"); // Asegúrate de que este sea el endpoint correcto
+    // Se obtiene la lista de todas las asignaturas disponibles
+    const subjectsResponse = await fetch("/api/subjects"); 
     const subjectsData = await subjectsResponse.json();
 
     if (!subjectsResponse.ok) {
       throw new Error("Error al obtener las asignaturas.");
     }
 
-    // Crea un mapa de todas las asignaturas por ID para facilitar la búsqueda
+    // un tipo mapa para las asignaturas 
     const allSubjects: Subject[] = subjectsData.map((subject: { id: string, name: string }) => ({
       id: subject.id,
       name: subject.name
@@ -30,9 +29,9 @@ export const getSubjectsForStudent = async (studentId: string) => {
 
     // Mapea los subjectIds del estudiante a los nombres de las asignaturas
     const studentSubjects = studentData.subjectsIds.map((subjectId: string) => {
-      const subject = allSubjects.find((subj: Subject) => subj.id === subjectId); // Usa el tipo "Subject" aquí
+      const subject = allSubjects.find((subj: Subject) => subj.id === subjectId);
       return subject ? subject.name : null;
-    }).filter((name: string | null) => name !== null); // Elimina asignaturas no encontradas (en caso de que haya algún error con los IDs)
+    }).filter((name: string | null) => name !== null); 
 
     return studentSubjects; // Devuelve los nombres de las asignaturas
 
