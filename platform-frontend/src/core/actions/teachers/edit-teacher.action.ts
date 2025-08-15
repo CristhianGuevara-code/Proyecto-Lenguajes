@@ -2,18 +2,18 @@ import { AxiosError } from "axios";
 import { ApiResponse } from "../../../infraestructure/interfaces/api.response";
 import { TeacherResponse } from "../../../infraestructure/interfaces/teacher.response";
 import { eduRuralApi } from "../../api/edurural.api";
-import { TeacherModel } from "../../models/teacher.model";
 import { ApiErrorResponse } from "../../../infraestructure/interfaces/api-error.response";
+import { TeacherEditModel } from "../../models/teacher-edit.model";
 
 export const editTeacherAction = async (
-    teacher: TeacherModel, teacherId: string
+    teacher: TeacherEditModel
 ): Promise<ApiResponse<TeacherResponse>> => {
 
     try {
 
         const { data } = await eduRuralApi
             .put<ApiResponse<TeacherResponse>>(
-                `/teachers/${teacherId}`,
+                `/teachers/${teacher.id}`,
                 teacher
             );
 

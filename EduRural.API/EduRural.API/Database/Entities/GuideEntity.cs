@@ -7,8 +7,7 @@ namespace EduRural.API.Database.Entities
     [Table("edu_guides")]
     public class GuideEntity : BaseEntity
     {
-        //[Key]
-        //public string Id { get; set; }
+
 
         [Column("title")]
         [StringLength(100)]
@@ -19,6 +18,7 @@ namespace EduRural.API.Database.Entities
         public string Description { get; set; }
 
         [Column("file_path")]
+        [StringLength(500)]
         public string FilePath { get; set; }
 
         [Column("upload_date")]

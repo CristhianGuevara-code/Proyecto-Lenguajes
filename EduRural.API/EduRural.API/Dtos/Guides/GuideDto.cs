@@ -7,7 +7,10 @@
         public string Description { get; set; }
         public string FilePath { get; set; }
         public DateTime UploadDate { get; set; }
+        public string GradeId { get; set; }
         public string GradeName { get; set; }
+        public string SubjectId { get; set; }
+        public string SubjectName { get; set; }
         public string UploadedByName { get; set; }
     }
 }

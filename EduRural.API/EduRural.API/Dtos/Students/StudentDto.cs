@@ -11,9 +11,15 @@ namespace EduRural.API.Dtos.Students
         // Información del grado
         public string GradeId { get; set; }
         public string GradeName { get; set; }
+        
+        //información del padre
+        public string ParentId { get; set; }
+        public string ParentName { get; set; }
 
         // Lista de materias asociadas
         public List<string> SubjectsIds { get; set; }
+        public string SubjectsNames { get; set; }
+
     }
 
 }

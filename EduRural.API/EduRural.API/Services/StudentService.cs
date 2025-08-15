@@ -33,7 +33,12 @@ namespace EduRural.API.Services
 
             IQueryable<StudentEntity> studentQuery = _context.Students
                 .Include(s => s.StudentSubjects)  // Incluir tabla intermedia
-                .ThenInclude(ss => ss.Subject);   // Y las materias
+                .ThenInclude(ss => ss.Subject)   // Y las materias
+                .Include(s => s.Parent)
+                .ThenInclude(p => p.User)
+                .Include(s => s.Grade);
+                
+            
 
             if (!string.IsNullOrEmpty(searchTerm))
             {

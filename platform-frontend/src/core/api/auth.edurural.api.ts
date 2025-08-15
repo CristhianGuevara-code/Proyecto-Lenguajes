@@ -1,11 +1,3 @@
-/*import axios from 'axios';
-
-export const authEduRuralApi = axios.create({
-    baseURL: import.meta.env.VITE_API_URL
-});
-*/
-
-// auth.edurural.api.ts (ejemplo)
 import axios from "axios";
 
 export const authEduRuralApi = axios.create({

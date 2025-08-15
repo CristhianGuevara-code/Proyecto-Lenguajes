@@ -22,7 +22,7 @@ namespace EduRural.API.Controllers
 
         //Obtener lista
         [HttpGet]
-        [Authorize(Roles = $"{RolesConstant.PROFESOR}, {RolesConstant.PADRE}")]
+        [Authorize(Roles = $"{RolesConstant.PROFESOR}, {RolesConstant.PADRE}, {RolesConstant.ADMIN}")]
         public async Task<ActionResult<ResponseDto<PaginationDto<List<GradeDto>>>>> GetList(
             string searchTerm = "", int page = 1, int pageSize = 0)
         {
@@ -38,7 +38,7 @@ namespace EduRural.API.Controllers
 
         //Obtener uno
         [HttpGet("{id}")]
-        [Authorize(Roles = $"{RolesConstant.PROFESOR}, {RolesConstant.PADRE}")]
+        [Authorize(Roles = $"{RolesConstant.PROFESOR}, {RolesConstant.PADRE}, {RolesConstant.ADMIN}")]
         public async Task<ActionResult<ResponseDto<GradeDto>>> GetOne(string id)
         {
             var response = await _gradesService.GetOneByIdAsync(id);
@@ -53,7 +53,7 @@ namespace EduRural.API.Controllers
 
         //Crear
         [HttpPost]
-        [Authorize(Roles = $"{RolesConstant.PROFESOR}, {RolesConstant.PADRE}")]
+        [Authorize(Roles = $"{RolesConstant.PROFESOR}, {RolesConstant.ADMIN}")]
         public async Task<ActionResult<ResponseDto<GradeActionResponseDto>>> Post([FromBody] GradeCreateDto dto)
         {
             var response = await _gradesService.CreateAsync(dto);
@@ -68,7 +68,7 @@ namespace EduRural.API.Controllers
 
         //Editar
         [HttpPut("{id}")] // Put porque se edita todo
-        [Authorize(Roles = $"{RolesConstant.PROFESOR}, {RolesConstant.PADRE}")]
+        [Authorize(Roles = $"{RolesConstant.PROFESOR}, {RolesConstant.ADMIN}")]
         public async Task<ActionResult<ResponseDto<GradeActionResponseDto>>> Edit([FromBody] GradeEditDto dto, string id)
         {
             var response = await _gradesService.EditAsync(dto, id);
@@ -78,7 +78,7 @@ namespace EduRural.API.Controllers
 
         //Eliminar
         [HttpDelete("{id}")]
-        [Authorize(Roles = $"{RolesConstant.PROFESOR}, {RolesConstant.PADRE}")]
+        [Authorize(Roles = $"{RolesConstant.PROFESOR}, {RolesConstant.ADMIN}")]
         public async Task<ActionResult<ResponseDto<GradeActionResponseDto>>> Delete(string id)
         {
             var response = await _gradesService.DeleteAsync(id);

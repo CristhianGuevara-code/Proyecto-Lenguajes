@@ -115,6 +115,120 @@ namespace EduRural.API.Services
             };
         }
 
+        // Endpoint para traer los usuarios que no tienen roles de admin
+        public async Task<ResponseDto<PaginationDto<List<UserDto>>>> GetEligibleAsync(
+     string role, string searchTerm = "", int page = 1, int pageSize = 0)
+        {
+            if (string.IsNullOrWhiteSpace(role))
+            {
+                return new ResponseDto<PaginationDto<List<UserDto>>>
+                {
+                    StatusCode = HttpStatusCode.BAD_REQUEST,
+                    Status = false,
+                    Message = "Debe especificar el rol (PADRE o PROFESOR)."
+                };
+            }
+
+            role = role.Trim().ToUpperInvariant();
+
+            pageSize = pageSize == 0 ? PAGE_SIZE : Math.Min(pageSize, PAGE_SIZE_LIMIT);
+            int startIndex = (page - 1) * pageSize;
+
+            // IDs de usuarios con rol ADMIN (siempre excluidos)
+            var adminUserIds = await (
+                from ur in _context.Set<IdentityUserRole<string>>()
+                join r in _context.Roles on ur.RoleId equals r.Id
+                where r.Name == EduRural.API.Constants.RolesConstant.ADMIN
+                select ur.UserId
+            ).ToListAsync();
+
+            // Query base
+            IQueryable<UserEntity> usersQuery = _context.Users.AsQueryable();
+
+            if (role == EduRural.API.Constants.RolesConstant.PADRE)
+            {
+                // Deben tener rol PADRE y no estar vinculados como Parent
+                var padreUserIdsQuery =
+                    from ur in _context.Set<IdentityUserRole<string>>()
+                    join r in _context.Roles on ur.RoleId equals r.Id
+                    where r.Name == EduRural.API.Constants.RolesConstant.PADRE
+                    select ur.UserId;
+
+                usersQuery = usersQuery
+                    .Include(u => u.Parent)
+                    .Where(u => u.Parent == null)                     // no vinculado aún
+                    .Where(u => padreUserIdsQuery.Contains(u.Id));    // con rol PADRE
+            }
+            else if (role == EduRural.API.Constants.RolesConstant.PROFESOR)
+            {
+                // Deben tener rol PROFESOR y no estar vinculados como Teacher
+                var profUserIdsQuery =
+                    from ur in _context.Set<IdentityUserRole<string>>()
+                    join r in _context.Roles on ur.RoleId equals r.Id
+                    where r.Name == EduRural.API.Constants.RolesConstant.PROFESOR
+                    select ur.UserId;
+
+                usersQuery = usersQuery
+                    .Include(u => u.Teacher)
+                    .Where(u => u.Teacher == null)                    // no vinculado aún
+                    .Where(u => profUserIdsQuery.Contains(u.Id));     // con rol PROFESOR
+            }
+            else
+            {
+                return new ResponseDto<PaginationDto<List<UserDto>>>
+                {
+                    StatusCode = HttpStatusCode.BAD_REQUEST,
+                    Status = false,
+                    Message = "Rol inválido. Use PADRE o PROFESOR."
+                };
+            }
+
+            // Excluir ADMIN siempre
+            usersQuery = usersQuery.Where(u => !adminUserIds.Contains(u.Id));
+
+            // Búsqueda por nombre/correo/username
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                usersQuery = usersQuery.Where(u =>
+                    (u.FullName + " " + u.Email + " " + u.UserName).Contains(searchTerm));
+            }
+
+            // Total y página
+            int totalRows = await usersQuery.CountAsync();
+
+            var usersEntity = await usersQuery
+                .OrderBy(u => u.FullName)
+                .Skip(startIndex)
+                .Take(pageSize)
+                .ToListAsync();
+
+            // Mapear DTO + roles (para mostrar en el combo)
+            var usersDto = _mapper.Map<List<UserDto>>(usersEntity);
+            for (int i = 0; i < usersEntity.Count; i++)
+            {
+                var roles = await _userManager.GetRolesAsync(usersEntity[i]);
+                usersDto[i].Roles = roles.ToList();
+            }
+
+            return new ResponseDto<PaginationDto<List<UserDto>>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Status = true,
+                Message = "Registros elegibles obtenidos correctamente",
+                Data = new PaginationDto<List<UserDto>>
+                {
+                    CurrentPage = page,
+                    PageSize = pageSize,
+                    TotalItems = totalRows,
+                    TotalPages = (int)Math.Ceiling((double)totalRows / pageSize),
+                    Items = usersDto,
+                    HasNextPage = (startIndex + pageSize) < totalRows,
+                    HasPreviousPage = page > 1
+                }
+            };
+        }
+
+
 
         public async Task<ResponseDto<UserActionResponseDto>> CreateAsync(UserCreateDto dto)
         {
@@ -201,6 +315,8 @@ namespace EduRural.API.Services
             }
         }
 
+    
+
         public async Task<ResponseDto<UserActionResponseDto>> EditAsync(UserEditDto dto, string id)
         {
             var user = await _userManager.FindByIdAsync(id);
@@ -214,13 +330,11 @@ namespace EduRural.API.Services
                 };
             }
 
+            // Validar roles si vienen
             if (dto.Roles != null && dto.Roles.Any())
             {
-                var existingRoles = await _roleManager
-                    .Roles.Select(r => r.Name).ToListAsync();
-
+                var existingRoles = await _roleManager.Roles.Select(r => r.Name).ToListAsync();
                 var invalidRoles = dto.Roles.Except(existingRoles);
-
                 if (invalidRoles.Any())
                 {
                     return new ResponseDto<UserActionResponseDto>
@@ -232,18 +346,77 @@ namespace EduRural.API.Services
                 }
             }
 
+            // Validar que el Email no exista
+            if (!string.IsNullOrWhiteSpace(dto.Email) && !dto.Email.Equals(user.Email, StringComparison.OrdinalIgnoreCase))
+            {
+                var emailExists = await _userManager.FindByEmailAsync(dto.Email);
+                if (emailExists != null && emailExists.Id != user.Id)
+                {
+                    return new ResponseDto<UserActionResponseDto>
+                    {
+                        StatusCode = HttpStatusCode.CONFLICT,
+                        Status = false,
+                        Message = "El correo ya está en uso."
+                    };
+                }
+                // Normalizar
+                user.Email = dto.Email.Trim().ToLowerInvariant();
+                user.UserName = user.Email;
+                user.NormalizedEmail = _userManager.NormalizeEmail(user.Email);
+                user.NormalizedUserName = _userManager.NormalizeName(user.UserName);
+            }
+
             using var transaction = await _context.Database.BeginTransactionAsync();
 
             try
             {
-                _mapper.Map<UserEditDto, UserEntity>(dto, user);
+                // Mapear solo campos editables no nulos
+                _mapper.Map(dto, user);
 
+                // Cambiar contraseña SOLO si viene
+                if (!string.IsNullOrWhiteSpace(dto.Password) || !string.IsNullOrWhiteSpace(dto.ConfirmPassword))
+                {
+                    if (string.IsNullOrWhiteSpace(dto.Password) || string.IsNullOrWhiteSpace(dto.ConfirmPassword))
+                    {
+                        await transaction.RollbackAsync();
+                        return new ResponseDto<UserActionResponseDto>
+                        {
+                            StatusCode = HttpStatusCode.BAD_REQUEST,
+                            Status = false,
+                            Message = "Debe proporcionar contraseña y confirmación."
+                        };
+                    }
+
+                    if (dto.Password != dto.ConfirmPassword)
+                    {
+                        await transaction.RollbackAsync();
+                        return new ResponseDto<UserActionResponseDto>
+                        {
+                            StatusCode = HttpStatusCode.BAD_REQUEST,
+                            Status = false,
+                            Message = "Las contraseñas no coinciden."
+                        };
+                    }
+
+                    var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                    var reset = await _userManager.ResetPasswordAsync(user, token, dto.Password);
+                    if (!reset.Succeeded)
+                    {
+                        await transaction.RollbackAsync();
+                        return new ResponseDto<UserActionResponseDto>
+                        {
+                            StatusCode = HttpStatusCode.BAD_REQUEST,
+                            Status = false,
+                            Message = $"Error al cambiar contraseña: {string.Join(", ", reset.Errors.Select(e => e.Description))}"
+                        };
+                    }
+                }
+
+                // Actualizar usuario
                 var updateResult = await _userManager.UpdateAsync(user);
-
                 if (!updateResult.Succeeded)
                 {
                     await transaction.RollbackAsync();
-
                     return new ResponseDto<UserActionResponseDto>
                     {
                         StatusCode = HttpStatusCode.BAD_REQUEST,
@@ -251,6 +424,8 @@ namespace EduRural.API.Services
                         Message = string.Join(", ", updateResult.Errors.Select(e => e.Description))
                     };
                 }
+
+                // Sincronizar roles si mandan la lista completa
                 if (dto.Roles is not null)
                 {
                     var currentRoles = await _userManager.GetRolesAsync(user);
@@ -267,8 +442,7 @@ namespace EduRural.API.Services
                             {
                                 StatusCode = HttpStatusCode.BAD_REQUEST,
                                 Status = false,
-                                Message = $"Error al agregar roles: {string.Join(", ", addResult.Errors
-                                .Select(e => e.Description))}"
+                                Message = $"Error al agregar roles: {string.Join(", ", addResult.Errors.Select(e => e.Description))}"
                             };
                         }
                     }
@@ -276,21 +450,19 @@ namespace EduRural.API.Services
                     if (rolesToRemove.Any())
                     {
                         var removeResult = await _userManager.RemoveFromRolesAsync(user, rolesToRemove);
-
                         if (!removeResult.Succeeded)
                         {
                             await transaction.RollbackAsync();
-
                             return new ResponseDto<UserActionResponseDto>
                             {
                                 StatusCode = HttpStatusCode.BAD_REQUEST,
                                 Status = false,
-                                Message = $"Error al borrar roles: {string.Join(", ", removeResult.Errors
-                                .Select(e => e.Description))}"
+                                Message = $"Error al borrar roles: {string.Join(", ", removeResult.Errors.Select(e => e.Description))}"
                             };
                         }
                     }
                 }
+
                 await transaction.CommitAsync();
 
                 return new ResponseDto<UserActionResponseDto>
@@ -301,10 +473,9 @@ namespace EduRural.API.Services
                     Data = _mapper.Map<UserActionResponseDto>(user)
                 };
             }
-            catch (Exception)
+            catch
             {
                 await transaction.RollbackAsync();
-
                 return new ResponseDto<UserActionResponseDto>
                 {
                     StatusCode = HttpStatusCode.INTERNAL_SERVER_ERROR,
@@ -313,7 +484,6 @@ namespace EduRural.API.Services
                 };
             }
         }
-
 
         public async Task<ResponseDto<UserActionResponseDto>> DeleteAsync(
             string id)

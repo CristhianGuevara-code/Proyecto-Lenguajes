@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { FaFileDownload, FaEdit, FaTrash } from "react-icons/fa";
 
-export const GuidesPage = () => {
+export const GuidePage = () => {
   const [assignments, setAssignments] = useState(() => {
     const saved = localStorage.getItem("assignments");
     return saved ? JSON.parse(saved) : [];
@@ -11,7 +11,7 @@ export const GuidesPage = () => {
     title: "",
     description: "",
     dueDate: "",
-    grade: "",       // <-- nuevo campo grado
+    grade: "",       
     subject: "",
     fileBase64: "",
     fileName: "",
@@ -272,4 +272,4 @@ export const GuidesPage = () => {
   );
 };
 
-export default GuidesPage;
+export default GuidePage;

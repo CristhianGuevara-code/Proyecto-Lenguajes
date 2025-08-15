@@ -280,6 +280,18 @@ button[disabled] {
   background-color: #4e1c01;
 }
 
+/* Para asegurar que los botones dentro de las tarjetas no se salgan de su contenedor */
+.grid > div {
+  box-sizing: border-box;
+}
+
+/* Para evitar cualquier desplazamiento no deseado */
+.card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
 /* Media queries para mejorar responsividad en móviles */
 @media (max-width: 600px) {
   .app {

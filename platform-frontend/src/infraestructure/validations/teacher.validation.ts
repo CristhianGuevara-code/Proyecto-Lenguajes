@@ -1,5 +1,5 @@
 import * as Yup from 'yup';
-import { TeacherModel } from '../../core/models/teacher.model';
+import { TeacherModel } from '../../core/models/teacher-create.model';
 
 export const teacherInitialValues: TeacherModel = {
      userID: "",

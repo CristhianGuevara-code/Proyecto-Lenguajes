@@ -23,7 +23,7 @@ namespace EduRural.API.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = $"{RolesConstant.PROFESOR}")]
+        [Authorize(Roles = $"{RolesConstant.PROFESOR}, {RolesConstant.ADMIN}")]
         public async Task<ActionResult<ResponseDto<PaginationDto<List<RoleDto>>>>> GetListPagination(
              string searchTerm = "", int page = 1, int pageSize = 10
              )
@@ -39,7 +39,7 @@ namespace EduRural.API.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = $"{RolesConstant.PROFESOR}")]
+        [Authorize(Roles = $"{RolesConstant.PROFESOR}, {RolesConstant.ADMIN}")]
         public async Task<ActionResult<ResponseDto<RoleDto>>> GetOneById(string id)
         {
             var response = await _rolesService.GetOneById(id);
@@ -54,7 +54,7 @@ namespace EduRural.API.Controllers
 
 
         [HttpPost]
-        [Authorize(Roles = $"{RolesConstant.PROFESOR}")]
+        [Authorize(Roles = $"{RolesConstant.PROFESOR}, {RolesConstant.ADMIN}")]
         public async Task<ActionResult<ResponseDto<RoleActionResponseDto>>> CreateAsync(RoleCreateDto dto)
         {
             var response = await _rolesService.CreateAsync(dto);
@@ -68,7 +68,7 @@ namespace EduRural.API.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = $"{RolesConstant.PROFESOR}")]
+        [Authorize(Roles = $"{RolesConstant.PROFESOR}, {RolesConstant.ADMIN}")]
         public async Task<ActionResult<ResponseDto<RoleActionResponseDto>>> EditAsync(
             [FromBody] RoleEditDto dto, string id)
         {
@@ -84,7 +84,7 @@ namespace EduRural.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = $"{RolesConstant.PROFESOR}")]
+        [Authorize(Roles = $"{RolesConstant.PROFESOR}, {RolesConstant.ADMIN}")]
         public async Task<ActionResult<ResponseDto<RoleActionResponseDto>>> Delete(string id)
         {
             var response = await _rolesService.DeleteAsync(id);

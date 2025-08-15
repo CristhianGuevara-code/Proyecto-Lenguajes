@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { BookOpen, School, Target, ClipboardList, Megaphone, LayoutDashboard } from "lucide-react";
 
-export const TeacherPage = () => {
+export const TeacherHome = () => {
     return (
         <div className="min-h-screen p-6 font-sans text-gray-800">
 
@@ -41,7 +41,7 @@ export const TeacherPage = () => {
                         </div>
                     </Link>
                     <Link
-                        to="/platform">
+                        to="/guides">
                         <div className="bg-white rounded-xl shadow-md p-4 border-l-4 border-teal-400 hover:shadow-xl transition cursor-pointer">
                             <h3 className="text-lg font-bold text-teal-800 flex items-center gap-2">
                                 <ClipboardList size={20} /> Gestionar Asignaciones
@@ -69,4 +69,4 @@ export const TeacherPage = () => {
     );
 };
 
-export default TeacherPage;
+export default TeacherHome;

@@ -1,0 +1,22 @@
+meta {
+  name: userselegible
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{PATH}}/users/eligible?role=PROFESOR&SearchTerm&Page=1&PageSize=10
+  body: none
+  auth: bearer
+}
+
+query {
+  role: PROFESOR
+  SearchTerm: 
+  Page: 1
+  PageSize: 10
+}
+
+auth:bearer {
+  token: {{TOKEN}}
+}

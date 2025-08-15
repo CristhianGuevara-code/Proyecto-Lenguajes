@@ -24,7 +24,7 @@ namespace EduRural.API.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = $"{RolesConstant.PROFESOR}")]
+        [Authorize(Roles = $"{RolesConstant.PROFESOR}, {RolesConstant.PADRE}, {RolesConstant.ADMIN}")]
         public async Task<ActionResult<ResponseDto<PaginationDto<List<UserDto>>>>>
             GetPaginationList(string searchTerm = "", int page = 1, int pageSize = 0)
         {
@@ -41,7 +41,7 @@ namespace EduRural.API.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = $"{RolesConstant.PROFESOR}")]
+        [Authorize(Roles = $"{RolesConstant.PROFESOR}, {RolesConstant.PADRE}, {RolesConstant.ADMIN}")]
         public async Task<ActionResult<ResponseDto<UserDto>>> GetOneById(
             string id)
         {
@@ -55,8 +55,26 @@ namespace EduRural.API.Controllers
             });
         }
 
+        [HttpGet("eligible")]
+        [Authorize(Roles = $"{RolesConstant.ADMIN},{RolesConstant.PROFESOR}")]
+        public async Task<ActionResult<ResponseDto<PaginationDto<List<UserDto>>>>>
+    GetEligible([FromQuery] string role, [FromQuery] string searchTerm = "", [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+           
+
+            // role esperado: "PADRE" o "PROFESOR"
+            var response = await _usersService.GetEligibleAsync(role, searchTerm, page, pageSize);
+
+            return StatusCode(response.StatusCode, new ResponseDto<PaginationDto<List<UserDto>>>
+            {
+                Status = response.Status,
+                Message = response.Message,
+                Data = response.Data
+            });
+        }
+
         [HttpPost]
-        [Authorize(Roles = $"{RolesConstant.PROFESOR}")]
+        [Authorize(Roles = $"{RolesConstant.PROFESOR}, {RolesConstant.ADMIN}")]
         public async Task<ActionResult<ResponseDto<UserActionResponseDto>>>
             Create([FromBody] UserCreateDto dto)
         {
@@ -73,7 +91,7 @@ namespace EduRural.API.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = $"{RolesConstant.PROFESOR}")]
+        [Authorize(Roles = $"{RolesConstant.PROFESOR}, {RolesConstant.ADMIN}")]
         public async Task<ActionResult<ResponseDto<UserActionResponseDto>>> Edit(
             [FromBody] UserEditDto dto, string id)
         {
@@ -90,7 +108,7 @@ namespace EduRural.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = $"{RolesConstant.PROFESOR}")]
+        [Authorize(Roles = $"{RolesConstant.PROFESOR}, {RolesConstant.ADMIN}")]
         public async Task<ActionResult<ResponseDto<UserActionResponseDto>>>
             Delete(string id)
         {

@@ -4,7 +4,7 @@ namespace EduRural.API.Dtos.Parents
 {
     public class ParentActionResponseDto
     {
-        public string Id { get; set; }          // Id del padre (mismo UserId)
+        public string Id { get; set; }          
         public string PhoneNumber { get; set; }
         public string Address { get; set; }
 

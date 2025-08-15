@@ -40,12 +40,17 @@ namespace EduRural.API.Services
 
             IQueryable<ParentEntity> parentQuery = _context.Parents
             .Include(p => p.User)
-            .Include(p => p.Students);
+            .Include(p => p.Students)
+            .ThenInclude(s => s.StudentSubjects)
+            .ThenInclude(ss => ss.Subject);
 
-            if (!string.IsNullOrEmpty(searchTerm)) //si el termino de busqueda es diferente a vacio o nulo
+            if (!string.IsNullOrEmpty(searchTerm))
             {
-                parentQuery = parentQuery.Where
-                    (x => (x.UserId).Contains(searchTerm));
+                parentQuery = parentQuery.Where(x =>
+                    x.UserId.Contains(searchTerm) ||
+                    x.User.FullName.Contains(searchTerm) ||
+                    x.User.Email.Contains(searchTerm)
+                );
             }
 
             int totalRows = await parentQuery.CountAsync();

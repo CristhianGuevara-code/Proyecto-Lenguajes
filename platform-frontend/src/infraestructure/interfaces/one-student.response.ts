@@ -5,5 +5,6 @@ export interface OneStudentResponse {
     gradeId:     string;
     gradeName:   string;
     subjectsIds: string[];
+    subjectsNames?: string[];
 }
 

@@ -2,11 +2,11 @@ import { AxiosError } from "axios";
 import { ApiResponse } from "../../../infraestructure/interfaces/api.response";
 import { TeacherResponse } from "../../../infraestructure/interfaces/teacher.response";
 import { eduRuralApi } from "../../api/edurural.api";
-import { TeacherModel } from "../../models/teacher.model";
 import { ApiErrorResponse } from "../../../infraestructure/interfaces/api-error.response";
+import { TeacherCreateModel } from "../../models/teacher-create.model";
 
 export const createTeacherAction = async (
-    teacher: TeacherModel
+    teacher: TeacherCreateModel
 ): Promise<ApiResponse<TeacherResponse>> => {
 
     try {

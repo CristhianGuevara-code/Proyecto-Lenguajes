@@ -22,7 +22,7 @@ namespace EduRural.API.Controllers
 
         //Obtener lista
         [HttpGet]
-        [Authorize(Roles = $"{RolesConstant.PROFESOR}")]
+        [Authorize(Roles = $"{RolesConstant.PROFESOR}, {RolesConstant.ADMIN}")]
         public async Task<ActionResult<ResponseDto<PaginationDto<List<StudentDto>>>>> GetList(
             string searchTerm = "", int page = 1, int pageSize = 0)
         {
@@ -38,7 +38,7 @@ namespace EduRural.API.Controllers
 
         //Obtener uno
         [HttpGet("{id}")]
-        [Authorize(Roles = $"{RolesConstant.PROFESOR}, {RolesConstant.PADRE}")]
+        [Authorize(Roles = $"{RolesConstant.PROFESOR}, {RolesConstant.ADMIN}")]
         public async Task<ActionResult<ResponseDto<StudentDto>>> GetOne(string id)
         {
             var response = await _studentsService.GetOneByIdAsync(id);
@@ -53,7 +53,7 @@ namespace EduRural.API.Controllers
 
         //Crear
         [HttpPost]
-        [Authorize(Roles = $"{RolesConstant.PROFESOR}, {RolesConstant.PADRE}")]
+        [Authorize(Roles = $"{RolesConstant.PROFESOR}, {RolesConstant.ADMIN}")]
         public async Task<ActionResult<ResponseDto<StudentActionResponseDto>>> Post([FromBody] StudentCreateDto dto)
         {
             var response = await _studentsService.CreateAsync(dto);
@@ -68,7 +68,7 @@ namespace EduRural.API.Controllers
 
         //Editar
         [HttpPut("{id}")] // Put porque se edita todo
-        [Authorize(Roles = $"{RolesConstant.PROFESOR}, {RolesConstant.PADRE}")]
+        [Authorize(Roles = $"{RolesConstant.PROFESOR}, {RolesConstant.ADMIN}")]
         public async Task<ActionResult<ResponseDto<StudentActionResponseDto>>> Edit([FromBody] StudentEditDto dto, string id)
         {
             var response = await _studentsService.EditAsync(dto, id);
@@ -78,7 +78,7 @@ namespace EduRural.API.Controllers
 
         //Eliminar
         [HttpDelete("{id}")]
-        [Authorize(Roles = $"{RolesConstant.PROFESOR}, {RolesConstant.PADRE}")]
+        [Authorize(Roles = $"{RolesConstant.PROFESOR}, {RolesConstant.ADMIN}")]
         public async Task<ActionResult<ResponseDto<StudentActionResponseDto>>> Delete(string id)
         {
             var response = await _studentsService.DeleteAsync(id);

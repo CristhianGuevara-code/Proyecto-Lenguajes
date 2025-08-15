@@ -19,7 +19,10 @@ namespace EduRural.API.Helpers
             // Guide
             CreateMap<GuideEntity, GuideDto>()
                .ForMember(dest => dest.GradeName, opt => opt.MapFrom(src => src.Grade.Name))
-               .ForMember(dest => dest.UploadedByName, opt => opt.MapFrom(src => src.UploadedBy.FullName));
+               .ForMember(dest => dest.UploadedByName, opt => opt.MapFrom(src => src.UploadedBy.FullName))
+               .ForMember(d => d.GradeId, opt => opt.MapFrom(s => s.GradeId))
+               .ForMember(d => d.SubjectId, opt => opt.MapFrom(s => s.SubjectId))
+               .ForMember(d => d.SubjectName, o => o.MapFrom(s => s.Subject.Name));
             CreateMap<GuideEntity, GuideActionResponseDto>();
             CreateMap<GuideCreateDto, GuideEntity>();
             CreateMap<GuideEditDto, GuideEntity>();
@@ -50,13 +53,15 @@ namespace EduRural.API.Helpers
             CreateMap<UserEntity, UserActionResponseDto>();
             CreateMap<UserCreateDto, UserEntity>()
                 .ForMember(dest => dest.UserName, org => org.MapFrom(src => src.Email));
-            CreateMap<UserEditDto, UserEntity>();
+            CreateMap<UserEditDto, UserEntity>()
+                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
 
             // Parent 
             CreateMap<ParentEntity, ParentDto>()
             .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.User.FullName))
             .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
             .ForMember(dest => dest.Students, opt => opt.MapFrom(src => src.Students));
+
             CreateMap<ParentEntity, ParentActionResponseDto>()
             .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.User.FullName))
             .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
@@ -66,15 +71,20 @@ namespace EduRural.API.Helpers
 
             // Student 
             CreateMap<StudentEntity, StudentDto>()
-                .ForMember(dest => dest.SubjectsIds, opt => opt.MapFrom(src =>
-                    (src.StudentSubjects ?? new List<StudentSubjectEntity>())
-                        .Select(ss => ss.SubjectId)))
-                .ForMember(dest => dest.GradeName, opt => opt.MapFrom(src => src.Grade.Name));
+            .ForMember(dest => dest.SubjectsIds, opt => opt.MapFrom(src =>
+            (src.StudentSubjects ?? new List<StudentSubjectEntity>())
+            .Select(ss => ss.SubjectId))) // Mapea los IDs de las asignaturas
+            .ForMember(dest => dest.SubjectsNames, opt => opt.MapFrom(src =>
+            string.Join(", ", (src.StudentSubjects ?? new List<StudentSubjectEntity>())
+            .Select(ss => ss.Subject.Name)))) // Convierte a string concatenado
+            .ForMember(dest => dest.GradeName, opt => opt.MapFrom(src => src.Grade.Name))
+            .ForMember(dest => dest.ParentId, opt => opt.MapFrom(src => src.Parent.Id))  // Mapea el ParentId
+            .ForMember(dest => dest.ParentName, opt => opt.MapFrom(src => src.Parent.User.FullName)); // Mapea el nombre del padre
 
             CreateMap<StudentEntity, StudentActionResponseDto>()
                 .ForMember(dest => dest.Subjects, opt => opt.MapFrom(src =>
                     (src.StudentSubjects ?? new List<StudentSubjectEntity>())
-                        .Select(ss => ss.Subject)))
+                        .Select(ss => ss.Subject))) // Mapea las asignaturas completas
                 .ForMember(dest => dest.GradeName, opt => opt.MapFrom(src => src.Grade.Name));
 
             CreateMap<StudentCreateDto, StudentEntity>()
@@ -82,6 +92,7 @@ namespace EduRural.API.Helpers
 
             CreateMap<StudentEditDto, StudentEntity>()
                 .ForMember(dest => dest.StudentSubjects, opt => opt.Ignore());
+
 
 
             // Teacher 

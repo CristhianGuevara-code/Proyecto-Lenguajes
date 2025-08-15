@@ -1,4 +1,5 @@
 export enum Role {
     PROFESOR = "PROFESOR",
-    PADRE = "PADRE"
+    PADRE = "PADRE",
+    ADMIN = "ADMIN"
 }
